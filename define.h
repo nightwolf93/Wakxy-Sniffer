@@ -19,5 +19,8 @@
 
 //define all usefull text for console
 #define TXT_LOG_DEFAULT "Bienvenue sur Wakxy Sniffer !"
+#define TXT_LOG_RELOAD_SETTINGS "Rechargement des fichiers de configuration ! Le proxy et la capture va être arrêté"
+#define TXT_LOG_PROXY_START "Proxy démarré"
+#define TXT_LOG_PROXY_STOP "Proxy arreté"
 
 #endif // DEFINE_H
