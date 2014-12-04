@@ -28,7 +28,7 @@ public slots:
 
 private:
     Ui::MainWindow *ui;
-    QSettings *m_setting;
+    QSettings *m_settings;
     Sniffer* m_sniffer;
     Log* m_log;
 

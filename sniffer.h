@@ -33,14 +33,20 @@ class Sniffer
 {
 
 private:
-    QTcpServer* m_server;
-    QTcpSocket* m_socket;
+    QTcpServer* m_proxy;
+
+    QTcpSocket* m_remoteSocket;
+    quint16 m_remotePktSize;
+
+    QTcpSocket* m_localSocket;
+    quint16 m_localPktSize;
+
     Packets m_packets;
     QHostAddress m_adresse;
     qint16 m_port;
 
-    eSnifferState m_sniffer_state;
-    eSnifferState m_capture_state;
+    eSnifferState m_snifferState;
+    eSnifferState m_captureState;
 
 public:
     Sniffer(QString adresse, qint16 port);
@@ -52,10 +58,10 @@ public:
     void StopCapture();
 
     Packets getPackets() { return this->m_packets; }
-    QTcpServer* getServer() { return this->m_server; }
+    QTcpServer* getProxy() { return this->m_proxy; }
 
-    eSnifferState getSnifferState() { return this->m_sniffer_state; }
-    eSnifferState getCaptureState() { return this->m_capture_state; }
+    eSnifferState getSnifferState() { return this->m_snifferState; }
+    eSnifferState getCaptureState() { return this->m_snifferState; }
 };
 
 #endif // PROXY_H

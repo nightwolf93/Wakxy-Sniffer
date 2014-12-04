@@ -2,28 +2,44 @@
 
 Sniffer::Sniffer(QString adresse, qint16 port)
 {
-    m_server = new QTcpServer();
-    m_socket = new QTcpSocket();
+    m_proxy = new QTcpServer();
+
+    m_localSocket = new QTcpSocket();
+    m_localPktSize = 0;
+
+    m_remoteSocket = NULL;
+    m_remotePktSize = 0;
+
     m_adresse = QHostAddress(adresse);
     m_port = port;
-    m_sniffer_state = eSnifferState::STOP;
-    m_capture_state = eSnifferState::STOP;
+
+    m_snifferState = eSnifferState::STOP;
+    m_captureState = eSnifferState::STOP;
 }
 
 void Sniffer::Start()
 {
-    if (!this->m_server->listen(QHostAddress::LocalHost, m_port))
+    if (!this->m_proxy->listen(QHostAddress::LocalHost, m_port))
+    {
+        qDebug() << m_proxy->errorString();
         return;
+    }
 
-    m_sniffer_state = eSnifferState::START;
+    m_snifferState = eSnifferState::START;
 }
 
 void Sniffer::Stop()
 {
-    m_socket->abort();
-    m_server->close();
+    if(m_remoteSocket) //1 close the remote socket
+    {
+        m_remoteSocket->abort();
+        m_remoteSocket->deleteLater();
+    }
 
-    m_sniffer_state = eSnifferState::STOP;
+    m_localSocket->abort(); //2 close the local socket
+    m_proxy->close(); //3 stop the proxy
+
+    m_snifferState = eSnifferState::STOP;
 }
 
 

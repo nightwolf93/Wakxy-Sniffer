@@ -12,9 +12,8 @@ MainWindow::MainWindow(QWidget *parent) :
     //default is auth parsing
     ui->radioButtonAuthSniffing->setChecked(true);
 
-
     //===============
-    //setting loader
+    //settings loader
     InitSettings();
     ApplySettings();
     //===============
@@ -32,7 +31,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //==============
     //event signal
-    connect(m_sniffer->getServer(), SIGNAL(connected()), this, SLOT(OnServerConnect()));
+    connect(m_sniffer->getProxy(), SIGNAL(connected()), this, SLOT(OnServerConnect()));
     connect(ui->pushButtonProxy, SIGNAL(clicked()), this, SLOT(UpdateProxyState()));
     connect(ui->pushButtonReloadConf, SIGNAL(clicked()), this, SLOT(ReloadConf()));
     //==============
@@ -64,7 +63,7 @@ void MainWindow::ReloadConf()
     InitSettings();
     ApplySettings();
 
-    m_log->Add(LogLevel::NORMAL, "Rechargement des fichiers de configuration ! Le proxy et la capture va être arrêté");
+    m_log->Add(LogLevel::NORMAL, TXT_LOG_RELOAD_SETTINGS);
 
     setProxyState(eSnifferState::STOP);
     m_sniffer = new Sniffer(m_authServer.toString(), m_authPort);
@@ -88,7 +87,7 @@ void MainWindow::setProxyState(eSnifferState state)
         ui->pushButtonCapture->setEnabled(true);
         //==============
 
-        m_log->Add(LogLevel::INFO, "Proxy démarré");
+        m_log->Add(LogLevel::INFO, TXT_LOG_PROXY_START);
     }
     else
     {
@@ -101,31 +100,31 @@ void MainWindow::setProxyState(eSnifferState state)
         ui->pushButtonCapture->setEnabled(false);
         //=================
 
-        m_log->Add(LogLevel::ERROR, "Proxy arrêté");
+        m_log->Add(LogLevel::ERROR, TXT_LOG_PROXY_STOP);
     }
 }
 
 
 //===================================
-//SETTING ===========================
+//SETTINGS ==========================
 //===================================
 
 void MainWindow::InitSettings()
 {
     //create setting instance
     //in application dir
-    m_setting = new QSettings(QApplication::applicationDirPath() + "/" + SETTINGS_FILE, QSettings::IniFormat);
+    m_settings = new QSettings(QApplication::applicationDirPath() + "/" + SETTINGS_FILE, QSettings::IniFormat);
 }
 
 void MainWindow::ApplySettings()
 {
     //load setting
-    m_authServer = QHostAddress(m_setting->value("auth/server", SETTINGS_DEFAULT_AUTH_SERVER).value<QString>());
-    m_authPort = m_setting->value("auth/port", SETTINGS_DEFAULT_AUTH_PORT).value<qint16>();
+    m_authServer = QHostAddress(m_settings->value("auth/server", SETTINGS_DEFAULT_AUTH_SERVER).value<QString>());
+    m_authPort = m_settings->value("auth/port", SETTINGS_DEFAULT_AUTH_PORT).value<qint16>();
 
     //save setting
-    m_setting->setValue("auth/server", m_authServer.toString());
-    m_setting->setValue("auth/port", m_authPort);
+    m_settings->setValue("auth/server", m_authServer.toString());
+    m_settings->setValue("auth/port", m_authPort);
 
     //ui update
     ui->labelServer->setText(TXT_UI_LABEL_SERVER + m_authServer.toString() + ":" + QString::number(m_authPort));
