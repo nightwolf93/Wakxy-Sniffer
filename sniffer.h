@@ -70,6 +70,7 @@ public:
 
     Packets getPackets() { return this->m_packets; }
     QTcpServer* getProxy() { return this->m_proxy; }
+
     QTcpSocket* getRemoteSocket() { return this->m_remoteSocket; }
 
     eSnifferState getSnifferState() { return this->m_snifferState; }
