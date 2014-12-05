@@ -50,7 +50,11 @@ MainWindow::~MainWindow()
 
 void MainWindow::OnServerConnect()
 {
-
+    m_log->Add(LogLevel::NORMAL,
+               QString("Le proxy a reussi a creer un pont avec le socket distant %1:%2")
+               .arg(m_sniffer->getRemoteSocket()->localAddress().toString(),
+                    QString::number(m_sniffer->getRemoteSocket()->localPort()))
+               );
 }
 
 void MainWindow::UpdateProxyState()
@@ -85,6 +89,7 @@ void MainWindow::setProxyState(eSnifferState state)
         ui->pushButtonProxy->setText(TXT_UI_BUTTON_STOP_PROXY);
         ui->pushButtonCapture->setText(TXT_UI_BUTTON_START_CAPTURE);
         ui->pushButtonCapture->setEnabled(true);
+        ui->groupBoxSnifferType->setEnabled(false);
         //==============
 
         m_log->Add(LogLevel::INFO, TXT_LOG_PROXY_START);
@@ -98,6 +103,7 @@ void MainWindow::setProxyState(eSnifferState state)
         ui->pushButtonProxy->setText(TXT_UI_BUTTON_START_PROXY);
         ui->pushButtonCapture->setText(TXT_UI_BUTTON_START_CAPTURE);
         ui->pushButtonCapture->setEnabled(false);
+        ui->groupBoxSnifferType->setEnabled(true);
         //=================
 
         m_log->Add(LogLevel::ERROR, TXT_LOG_PROXY_STOP);

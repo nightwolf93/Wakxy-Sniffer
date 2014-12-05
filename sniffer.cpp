@@ -15,6 +15,8 @@ Sniffer::Sniffer(QString adresse, qint16 port)
 
     m_snifferState = eSnifferState::STOP;
     m_captureState = eSnifferState::STOP;
+
+    //events link
 }
 
 void Sniffer::Start()

@@ -44,8 +44,8 @@ void Log::Add(LogLevel level, QString message)
             break;
     }
 
-    QString endHtml = "</font>";
-    m_parent->setHtml(m_parent->toHtml() + startHtml + ">> " + message + endHtml);
+    QString endHtml = "</font>\n";
+    m_parent->append(startHtml + ">> " + message + endHtml);
 
     //scrollbar to bottom
     MoveToBottom();
