@@ -26,12 +26,25 @@ MainWindow::MainWindow(QWidget *parent) :
     //==============
     //sniffer
     m_sniffer = new Sniffer(m_authServer.toString(), m_authPort);
-    setProxyState(eSnifferState::STOP);
+    setProxyState(STOP);
     //==============
 
     //==============
     //event signal
-    connect(m_sniffer->getProxy(), SIGNAL(connected()), this, SLOT(OnServerConnect()));
+
+    //proxy
+    connect(m_sniffer, SIGNAL(ProxyConnect()), this, SLOT(OnProxyConnection()));
+
+    //local
+    connect(m_sniffer, SIGNAL(LocalConnect()), this, SLOT(OnLocalConnect()));
+    connect(m_sniffer, SIGNAL(LocalDisconnect()), this, SLOT(OnLocalDisconnect()));
+    connect(m_sniffer, SIGNAL(LocalPacketRecv()), this, SLOT(OnLocalPacketRecv()));
+
+    //remote
+    connect(m_sniffer, SIGNAL(RemoteConnect()), this, SLOT(OnRemoteConnect()));
+    connect(m_sniffer, SIGNAL(RemoteDisconnect()), this, SLOT(OnRemoteDisconnect()));
+    connect(m_sniffer, SIGNAL(RemotePacketRecv()), this, SLOT(OnRemotePacketRecv()));
+
     connect(ui->pushButtonProxy, SIGNAL(clicked()), this, SLOT(UpdateProxyState()));
     connect(ui->pushButtonReloadConf, SIGNAL(clicked()), this, SLOT(ReloadConf()));
     //==============
@@ -48,30 +61,72 @@ MainWindow::~MainWindow()
 //EVENT =============================
 //===================================
 
-void MainWindow::OnServerConnect()
+//================
+//local ==========
+
+void MainWindow::OnLocalConnect()
 {
-    m_log->Add(LogLevel::NORMAL,
-               QString("Le proxy a reussi a creer un pont avec le socket distant %1:%2")
-               .arg(m_sniffer->getRemoteSocket()->localAddress().toString(),
-                    QString::number(m_sniffer->getRemoteSocket()->localPort()))
-               );
+    m_log->Add(NORMAL, "Local connect");
 }
+
+void MainWindow::OnLocalDisconnect()
+{
+    m_log->Add(NORMAL, "Local disconnect");
+}
+
+void MainWindow::OnLocalPacketRecv()
+{
+    m_log->Add(NORMAL, "Local receive packet");
+}
+
+//================
+//remote =========
+
+void MainWindow::OnRemoteConnect()
+{
+    m_log->Add(NORMAL, "Remote connect");
+}
+
+void MainWindow::OnRemoteDisconnect()
+{
+    m_log->Add(NORMAL, "Remote disconnect");
+}
+
+void MainWindow::OnRemotePacketRecv()
+{
+    m_log->Add(NORMAL, "Remote receive packet");
+}
+
+//================
+//proxy ==========
+
+void MainWindow::OnProxyConnection()
+{
+    m_log->Add(NORMAL, "Proxy connection");
+}
+
+
 
 void MainWindow::UpdateProxyState()
 {
-    setProxyState((m_sniffer->getSnifferState() == eSnifferState::START) ? eSnifferState::STOP : eSnifferState::START);
+    setProxyState((m_sniffer->getSnifferState() == START) ? STOP : START);
 }
+
+//================
+//settings =======
 
 void MainWindow::ReloadConf()
 {
     InitSettings();
     ApplySettings();
 
-    m_log->Add(LogLevel::NORMAL, TXT_LOG_RELOAD_SETTINGS);
+    m_log->Add(NORMAL, TXT_LOG_RELOAD_SETTINGS);
 
-    setProxyState(eSnifferState::STOP);
+    setProxyState(STOP);
     m_sniffer = new Sniffer(m_authServer.toString(), m_authPort);
 }
+
+//================
 
 //===================================
 //FUNCTION ==========================
@@ -80,7 +135,7 @@ void MainWindow::ReloadConf()
 void MainWindow::setProxyState(eSnifferState state)
 {
     //if sniffer is stopped we need to start them else start
-    if (state == eSnifferState::START)
+    if (state == START)
     {
         m_sniffer->Start();
 
@@ -92,7 +147,7 @@ void MainWindow::setProxyState(eSnifferState state)
         ui->groupBoxSnifferType->setEnabled(false);
         //==============
 
-        m_log->Add(LogLevel::INFO, TXT_LOG_PROXY_START);
+        m_log->Add(INFO, TXT_LOG_PROXY_START);
     }
     else
     {
@@ -106,7 +161,7 @@ void MainWindow::setProxyState(eSnifferState state)
         ui->groupBoxSnifferType->setEnabled(true);
         //=================
 
-        m_log->Add(LogLevel::ERROR, TXT_LOG_PROXY_STOP);
+        m_log->Add(ERROR, TXT_LOG_PROXY_STOP);
     }
 }
 

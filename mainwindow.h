@@ -22,7 +22,16 @@ public:
     ~MainWindow();
 
 public slots:
-    void OnServerConnect();
+    void OnLocalConnect();
+    void OnLocalDisconnect();
+    void OnLocalPacketRecv();
+
+    void OnRemoteConnect();
+    void OnRemoteDisconnect();
+    void OnRemotePacketRecv();
+
+    void OnProxyConnection();
+
     void UpdateProxyState();
     void ReloadConf();
 

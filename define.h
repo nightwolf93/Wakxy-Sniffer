@@ -5,8 +5,8 @@
 #define SETTINGS_FILE "settings.ini"
 
 //define default value of config file
-#define SETTINGS_DEFAULT_AUTH_SERVER "127.0.0.1"
-#define SETTINGS_DEFAULT_AUTH_PORT 4443
+#define SETTINGS_DEFAULT_AUTH_SERVER "80.239.173.156"
+#define SETTINGS_DEFAULT_AUTH_PORT 5558
 
 //define all usefull text for ui
 #define TXT_UI_LABEL_SERVER "Proxy pour l'adresse "
