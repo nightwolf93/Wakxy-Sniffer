@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include "define.h"
 #include "log.h"
+#include "packeteditor.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -39,11 +40,15 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_sniffer, SIGNAL(LocalConnect()), this, SLOT(OnLocalConnect()));
     connect(m_sniffer, SIGNAL(LocalDisconnect()), this, SLOT(OnLocalDisconnect()));
     connect(m_sniffer, SIGNAL(LocalPacketRecv()), this, SLOT(OnLocalPacketRecv()));
+    connect(m_sniffer, SIGNAL(LocalError(QAbstractSocket::SocketError)), this, SLOT(OnLocalSocketError(QAbstractSocket::SocketError)));
+    connect(m_sniffer, SIGNAL(LocalPacketSend(Packet)), this, SLOT(OnLocalPacketSend(Packet)));
 
     //remote
     connect(m_sniffer, SIGNAL(RemoteConnect()), this, SLOT(OnRemoteConnect()));
     connect(m_sniffer, SIGNAL(RemoteDisconnect()), this, SLOT(OnRemoteDisconnect()));
     connect(m_sniffer, SIGNAL(RemotePacketRecv()), this, SLOT(OnRemotePacketRecv()));
+    connect(m_sniffer, SIGNAL(RemoteError(QAbstractSocket::SocketError)), this, SLOT(OnRemoteSocketError(QAbstractSocket::SocketError)));
+    connect(m_sniffer, SIGNAL(RemotePacketSend(Packet)), this, SLOT(OnRemotePacketSend(Packet)));
 
     connect(ui->pushButtonProxy, SIGNAL(clicked()), this, SLOT(UpdateProxyState()));
     connect(ui->pushButtonReloadConf, SIGNAL(clicked()), this, SLOT(ReloadConf()));
@@ -66,17 +71,27 @@ MainWindow::~MainWindow()
 
 void MainWindow::OnLocalConnect()
 {
-    m_log->Add(NORMAL, "Local connect");
+    m_log->Add(NORMAL, TXT_LOG_LOCAL_CONNECT);
 }
 
 void MainWindow::OnLocalDisconnect()
 {
-    m_log->Add(NORMAL, "Local disconnect");
+    m_log->Add(ERROR, TXT_LOG_LOCAL_DISCONNECT);
 }
 
 void MainWindow::OnLocalPacketRecv()
 {
-    m_log->Add(NORMAL, "Local receive packet");
+}
+
+void MainWindow::OnLocalSocketError(QAbstractSocket::SocketError /*socketError*/)
+{
+    m_log->Add(NORMAL, m_sniffer->getLocalSocket()->errorString());
+}
+
+void MainWindow::OnLocalPacketSend(Packet packet)
+{
+    PacketEditor* packetEditor = new PacketEditor(packet.raw, PacketEditor::PACKET_CLIENT);
+    m_log->Add(INFO, TXT_LOG_LOCAL_PACKET_SEND);
 }
 
 //================
@@ -84,17 +99,27 @@ void MainWindow::OnLocalPacketRecv()
 
 void MainWindow::OnRemoteConnect()
 {
-    m_log->Add(NORMAL, "Remote connect");
+    m_log->Add(NORMAL, TXT_LOG_REMOTE_CONNECT);
 }
 
 void MainWindow::OnRemoteDisconnect()
 {
-    m_log->Add(NORMAL, "Remote disconnect");
+    m_log->Add(ERROR, TXT_LOG_REMOTE_DISCONNECT);
 }
 
 void MainWindow::OnRemotePacketRecv()
 {
-    m_log->Add(NORMAL, "Remote receive packet");
+}
+
+void MainWindow::OnRemoteSocketError(QAbstractSocket::SocketError /*socketError*/)
+{
+    m_log->Add(NORMAL, m_sniffer->getRemoteSocket()->errorString());
+}
+
+void MainWindow::OnRemotePacketSend(Packet packet)
+{
+     PacketEditor* packetEditor = new PacketEditor(packet.raw, PacketEditor::PACKET_SERVER);
+     m_log->Add(INFO, TXT_LOG_REMOTE_PACKET_SEND);
 }
 
 //================
@@ -102,10 +127,8 @@ void MainWindow::OnRemotePacketRecv()
 
 void MainWindow::OnProxyConnection()
 {
-    m_log->Add(NORMAL, "Proxy connection");
+    m_log->Add(NORMAL, TXT_LOG_PROXY_CONNEXION);
 }
-
-
 
 void MainWindow::UpdateProxyState()
 {

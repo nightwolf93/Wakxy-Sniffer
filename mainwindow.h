@@ -8,6 +8,7 @@
 #include "sniffer.h" //sniffer helper
 #include "log.h" //log helper
 #include "define.h" //all default value and some text
+#include "packeteditor.h"
 
 namespace Ui {
 class MainWindow;
@@ -25,10 +26,14 @@ public slots:
     void OnLocalConnect();
     void OnLocalDisconnect();
     void OnLocalPacketRecv();
+    void OnLocalSocketError(QAbstractSocket::SocketError);
+    void OnLocalPacketSend(Packet packet);
 
     void OnRemoteConnect();
     void OnRemoteDisconnect();
     void OnRemotePacketRecv();
+    void OnRemoteSocketError(QAbstractSocket::SocketError /*socketError*/);
+    void OnRemotePacketSend(Packet packet);
 
     void OnProxyConnection();
 

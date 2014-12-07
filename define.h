@@ -20,7 +20,18 @@
 //define all usefull text for console
 #define TXT_LOG_DEFAULT "Bienvenue sur Wakxy Sniffer !"
 #define TXT_LOG_RELOAD_SETTINGS "Rechargement des fichiers de configuration ! Le proxy et la capture va être arrêté"
+
 #define TXT_LOG_PROXY_START "Proxy démarré"
 #define TXT_LOG_PROXY_STOP "Proxy arreté"
+#define TXT_LOG_PROXY_CONNEXION "Proxy connection"
+
+#define TXT_LOG_REMOTE_CONNECT "Serveur distant connecté"
+#define TXT_LOG_REMOTE_DISCONNECT "Serveur distant déconnecté"
+#define TXT_LOG_REMOTE_PACKET_SEND "Serveur distant envoie un packet au client"
+
+#define TXT_LOG_LOCAL_CONNECT "Local connecté"
+#define TXT_LOG_LOCAL_DISCONNECT "Local déconnecté"
+#define TXT_LOG_LOCAL_PACKET_SEND "Le client envoie un packet au serveur distant"
+
 
 #endif // DEFINE_H

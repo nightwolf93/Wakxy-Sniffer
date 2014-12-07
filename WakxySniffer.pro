@@ -15,11 +15,13 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     sniffer.cpp \
-    log.cpp
+    log.cpp \
+    packeteditor.cpp
 
 HEADERS  += mainwindow.h \
     define.h \
     sniffer.h \
-    log.h
+    log.h \
+    packeteditor.h
 
 FORMS    += mainwindow.ui

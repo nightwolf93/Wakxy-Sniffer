@@ -8,6 +8,7 @@
 
 #include "define.h"
 
+#define PACKET_SIZE_WAKFU 2
 
 enum eSnifferState
 {
@@ -19,7 +20,6 @@ enum eSnifferState
 struct Packet
 {
     QByteArray raw;
-    Packet* reader;
     qint64 delayedTime;
 };
 
@@ -39,10 +39,10 @@ private:
     QTcpServer* m_proxy;
 
     QTcpSocket* m_remoteSocket;
-    quint16 m_remotePktSize;
+    qint16 m_remotePktSize;
 
     QTcpSocket* m_localSocket;
-    quint16 m_localPktSize;
+    qint16 m_localPktSize;
 
     Packets m_packets;
     QHostAddress m_adresse;
@@ -56,12 +56,14 @@ signals:
     void LocalConnect();
     void LocalPacketRecv();
     void LocalDisconnect();
-    void LocalError(QAbstractSocket::SocketError);
+    void LocalError(QAbstractSocket::SocketError socketError);
+    void LocalPacketSend(Packet packet);
 
     void RemoteConnect();
     void RemotePacketRecv();
     void RemoteDisconnect();
-    void RemoteError(QAbstractSocket::SocketError);
+    void RemoteError(QAbstractSocket::SocketError socketError);
+    void RemotePacketSend(Packet packet);
 
     void ProxyConnect();
 
@@ -74,7 +76,7 @@ public slots:
     void OnRemoteConnect(); //remote connection
     void OnRemovePacketRecv(); //remote packet receive
     void OnRemoteDisconnect(); //remote connection is close
-    void OnRemoveError(QAbstractSocket::SocketError socketError); //remote socket error
+    void OnRemoteError(QAbstractSocket::SocketError socketError); //remote socket error
 
     void OnProxyConnect();
 
