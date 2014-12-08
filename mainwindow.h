@@ -4,11 +4,12 @@
 #include <QtNetwork>
 #include <QMainWindow>
 #include <QSettings>
+#include <QTreeWidget>
 
 #include "sniffer.h" //sniffer helper
 #include "log.h" //log helper
 #include "define.h" //all default value and some text
-#include "packeteditor.h"
+#include "packeteditor.h" //packet editor
 
 namespace Ui {
 class MainWindow;
@@ -19,6 +20,17 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
+    //packet table enum
+    enum PacketTableColumns
+    {
+        NUMBER,
+        TYPE,
+        SIZE,
+        OPCODE,
+        ASCII,
+        HEX,
+    };
+
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
@@ -52,8 +64,9 @@ private:
 
     void InitSettings();
     void ApplySettings();
+    void AddPacketToTable(PacketEditor* packetEditor);
 
-    void setProxyState(eSnifferState state);
+    void setProxyState(Sniffer::SnifferState state);
 };
 
 #endif // MAINWINDOW_H

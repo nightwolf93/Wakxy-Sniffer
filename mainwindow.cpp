@@ -10,9 +10,6 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    //default is auth parsing
-    ui->radioButtonAuthSniffing->setChecked(true);
-
     //===============
     //settings loader
     InitSettings();
@@ -27,7 +24,7 @@ MainWindow::MainWindow(QWidget *parent) :
     //==============
     //sniffer
     m_sniffer = new Sniffer(m_authServer.toString(), m_authPort);
-    setProxyState(STOP);
+    setProxyState(Sniffer::STOP);
     //==============
 
     //==============
@@ -71,12 +68,12 @@ MainWindow::~MainWindow()
 
 void MainWindow::OnLocalConnect()
 {
-    m_log->Add(NORMAL, TXT_LOG_LOCAL_CONNECT);
+    m_log->Add(Log::NORMAL, TXT_LOG_LOCAL_CONNECT);
 }
 
 void MainWindow::OnLocalDisconnect()
 {
-    m_log->Add(ERROR, TXT_LOG_LOCAL_DISCONNECT);
+    m_log->Add(Log::ERROR, TXT_LOG_LOCAL_DISCONNECT);
 }
 
 void MainWindow::OnLocalPacketRecv()
@@ -85,13 +82,15 @@ void MainWindow::OnLocalPacketRecv()
 
 void MainWindow::OnLocalSocketError(QAbstractSocket::SocketError /*socketError*/)
 {
-    m_log->Add(NORMAL, m_sniffer->getLocalSocket()->errorString());
+    m_log->Add(Log::NORMAL, m_sniffer->getLocalSocket()->errorString());
 }
 
 void MainWindow::OnLocalPacketSend(Packet packet)
 {
     PacketEditor* packetEditor = new PacketEditor(packet.raw, PacketEditor::PACKET_CLIENT);
-    m_log->Add(INFO, TXT_LOG_LOCAL_PACKET_SEND);
+    AddPacketToTable(packetEditor);
+
+    m_log->Add(Log::INFO, TXT_LOG_LOCAL_PACKET_SEND);
 }
 
 //================
@@ -99,12 +98,12 @@ void MainWindow::OnLocalPacketSend(Packet packet)
 
 void MainWindow::OnRemoteConnect()
 {
-    m_log->Add(NORMAL, TXT_LOG_REMOTE_CONNECT);
+    m_log->Add(Log::NORMAL, TXT_LOG_REMOTE_CONNECT);
 }
 
 void MainWindow::OnRemoteDisconnect()
 {
-    m_log->Add(ERROR, TXT_LOG_REMOTE_DISCONNECT);
+    m_log->Add(Log::ERROR, TXT_LOG_REMOTE_DISCONNECT);
 }
 
 void MainWindow::OnRemotePacketRecv()
@@ -113,13 +112,15 @@ void MainWindow::OnRemotePacketRecv()
 
 void MainWindow::OnRemoteSocketError(QAbstractSocket::SocketError /*socketError*/)
 {
-    m_log->Add(NORMAL, m_sniffer->getRemoteSocket()->errorString());
+    m_log->Add(Log::NORMAL, m_sniffer->getRemoteSocket()->errorString());
 }
 
 void MainWindow::OnRemotePacketSend(Packet packet)
 {
      PacketEditor* packetEditor = new PacketEditor(packet.raw, PacketEditor::PACKET_SERVER);
-     m_log->Add(INFO, TXT_LOG_REMOTE_PACKET_SEND);
+     AddPacketToTable(packetEditor);
+
+     m_log->Add(Log::INFO, TXT_LOG_REMOTE_PACKET_SEND);
 }
 
 //================
@@ -127,12 +128,12 @@ void MainWindow::OnRemotePacketSend(Packet packet)
 
 void MainWindow::OnProxyConnection()
 {
-    m_log->Add(NORMAL, TXT_LOG_PROXY_CONNEXION);
+    m_log->Add(Log::NORMAL, TXT_LOG_PROXY_CONNEXION);
 }
 
 void MainWindow::UpdateProxyState()
 {
-    setProxyState((m_sniffer->getSnifferState() == START) ? STOP : START);
+    setProxyState((m_sniffer->getSnifferState() == Sniffer::START) ? Sniffer::STOP : Sniffer::START);
 }
 
 //================
@@ -143,22 +144,22 @@ void MainWindow::ReloadConf()
     InitSettings();
     ApplySettings();
 
-    m_log->Add(NORMAL, TXT_LOG_RELOAD_SETTINGS);
+    m_log->Add(Log::NORMAL, TXT_LOG_RELOAD_SETTINGS);
 
-    setProxyState(STOP);
+    setProxyState(Sniffer::STOP);
     m_sniffer = new Sniffer(m_authServer.toString(), m_authPort);
 }
 
 //================
 
 //===================================
-//FUNCTION ==========================
+//METHODS ===========================
 //===================================
 
-void MainWindow::setProxyState(eSnifferState state)
+void MainWindow::setProxyState(Sniffer::SnifferState state)
 {
     //if sniffer is stopped we need to start them else start
-    if (state == START)
+    if (state == Sniffer::START)
     {
         m_sniffer->Start();
 
@@ -167,10 +168,9 @@ void MainWindow::setProxyState(eSnifferState state)
         ui->pushButtonProxy->setText(TXT_UI_BUTTON_STOP_PROXY);
         ui->pushButtonCapture->setText(TXT_UI_BUTTON_START_CAPTURE);
         ui->pushButtonCapture->setEnabled(true);
-        ui->groupBoxSnifferType->setEnabled(false);
         //==============
 
-        m_log->Add(INFO, TXT_LOG_PROXY_START);
+        m_log->Add(Log::INFO, TXT_LOG_PROXY_START);
     }
     else
     {
@@ -181,13 +181,37 @@ void MainWindow::setProxyState(eSnifferState state)
         ui->pushButtonProxy->setText(TXT_UI_BUTTON_START_PROXY);
         ui->pushButtonCapture->setText(TXT_UI_BUTTON_START_CAPTURE);
         ui->pushButtonCapture->setEnabled(false);
-        ui->groupBoxSnifferType->setEnabled(true);
         //=================
 
-        m_log->Add(ERROR, TXT_LOG_PROXY_STOP);
+        m_log->Add(Log::ERROR, TXT_LOG_PROXY_STOP);
     }
 }
 
+void MainWindow::AddPacketToTable(PacketEditor *packetEditor)
+{
+    QTreeWidgetItem* item = new QTreeWidgetItem;
+
+    //count packet
+    item->setText(PacketTableColumns::NUMBER, QString::number(m_sniffer->getCountPackets()));
+
+    //packet type
+    if (packetEditor->getPacketType() == PacketEditor::PACKET_SERVER)
+        item->setText(PacketTableColumns::TYPE, "Server");
+    else
+        item->setText(PacketTableColumns::TYPE, "Client");
+
+    //size
+    item->setText(PacketTableColumns::SIZE, QString::number(packetEditor->getSize()));
+
+    //opcode
+    item->setText(PacketTableColumns::OPCODE, QString::number(packetEditor->getOpcode()));
+
+    //ASCII
+    //HEX
+
+    //add item
+    ui->treeWidgetPacket->addTopLevelItem(item);
+}
 
 //===================================
 //SETTINGS ==========================

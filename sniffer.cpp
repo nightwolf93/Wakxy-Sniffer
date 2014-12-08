@@ -10,6 +10,8 @@ Sniffer::Sniffer(QString adresse, qint16 port)
     m_localSocket = NULL;
     m_localPktSize = 0;
 
+    m_countPackets = 0;
+
     m_adresse = QHostAddress(adresse);
     m_port = port;
 
@@ -193,8 +195,6 @@ void Sniffer::Stop()
 
     m_remoteSocket->abort(); //2 close the remote socket
     m_proxy->close(); //3 stop the proxy
-
-    m_snifferState = STOP;
 }
 
 
@@ -208,11 +208,13 @@ void Sniffer::QueuePacket(Packet packet, bool isLocalPacket)
     if(isLocalPacket)
     {
         m_remoteSocket->write(packet.raw);
+        m_countPackets++;
         LocalPacketSend(packet);
     }
     else
     {
         m_localSocket->write(packet.raw);
+        m_countPackets++;
         RemotePacketSend(packet);
     }
 }

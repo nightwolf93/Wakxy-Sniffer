@@ -5,12 +5,6 @@
 #include <QString>
 #include <QScrollBar>
 
-enum LogLevel
-{
-    NORMAL, //black
-    ERROR, //red
-    INFO, //blue
-};
 
 class Log
 {
@@ -18,6 +12,13 @@ private:
     QTextEdit* m_parent;
 
 public:
+    enum LogLevel
+    {
+        NORMAL, //black
+        ERROR, //red
+        INFO, //blue
+    };
+
     Log(QTextBrowser* parent);
     void Add(LogLevel level, QString message);
     void Clear();

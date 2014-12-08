@@ -5,16 +5,9 @@
 #include <QTcpServer>
 #include <QList>
 #include <QtCore>
-
 #include "define.h"
 
 #define PACKET_SIZE_WAKFU 2
-
-enum eSnifferState
-{
-    START,
-    STOP
-};
 
 //packet struct
 struct Packet
@@ -35,6 +28,13 @@ class Sniffer : public QObject
 
     Q_OBJECT
 
+public:
+    enum SnifferState
+    {
+        START,
+        STOP
+    };
+
 private:
     QTcpServer* m_proxy;
 
@@ -48,8 +48,10 @@ private:
     QHostAddress m_adresse;
     qint16 m_port;
 
-    eSnifferState m_snifferState;
-    eSnifferState m_captureState;
+    SnifferState m_snifferState;
+    SnifferState m_captureState;
+
+    int m_countPackets;
 
 //signals can be connected in ui
 signals:
@@ -97,8 +99,10 @@ public:
     QTcpSocket* getRemoteSocket() { return this->m_remoteSocket; }
     QTcpSocket* getLocalSocket() { return this->m_localSocket; }
 
-    eSnifferState getSnifferState() { return this->m_snifferState; }
-    eSnifferState getCaptureState() { return this->m_snifferState; }
+    SnifferState getSnifferState() { return this->m_snifferState; }
+    SnifferState getCaptureState() { return this->m_snifferState; }
+
+    int getCountPackets() { return this->m_countPackets; }
 };
 
 #endif // PROXY_H
