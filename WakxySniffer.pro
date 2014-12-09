@@ -16,12 +16,14 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     sniffer.cpp \
     log.cpp \
-    packeteditor.cpp
+    packeteditor.cpp \
+    utils.cpp
 
 HEADERS  += mainwindow.h \
     define.h \
     sniffer.h \
     log.h \
-    packeteditor.h
+    packeteditor.h \
+    utils.h
 
 FORMS    += mainwindow.ui

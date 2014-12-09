@@ -195,6 +195,8 @@ void Sniffer::Stop()
 
     m_remoteSocket->abort(); //2 close the remote socket
     m_proxy->close(); //3 stop the proxy
+
+    m_snifferState = STOP;
 }
 
 

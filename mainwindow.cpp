@@ -3,6 +3,7 @@
 #include "define.h"
 #include "log.h"
 #include "packeteditor.h"
+#include "utils.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -196,9 +197,9 @@ void MainWindow::AddPacketToTable(PacketEditor *packetEditor)
 
     //packet type
     if (packetEditor->getPacketType() == PacketEditor::PACKET_SERVER)
-        item->setText(PacketTableColumns::TYPE, "Server");
+        item->setText(PacketTableColumns::TYPE, TXT_UI_TABLE_PACKET_SERVER);
     else
-        item->setText(PacketTableColumns::TYPE, "Client");
+        item->setText(PacketTableColumns::TYPE, TXT_UI_TABLE_PACKET_CLIENT);
 
     //size
     item->setText(PacketTableColumns::SIZE, QString::number(packetEditor->getSize()));
@@ -207,7 +208,10 @@ void MainWindow::AddPacketToTable(PacketEditor *packetEditor)
     item->setText(PacketTableColumns::OPCODE, QString::number(packetEditor->getOpcode()));
 
     //ASCII
+    item->setText(PacketTableColumns::ASCII, Utils::ToASCII(packetEditor->getPacket()));
+
     //HEX
+    item->setText(PacketTableColumns::HEX, Utils::ToHexString(packetEditor->getPacket()));
 
     //add item
     ui->treeWidgetPacket->addTopLevelItem(item);

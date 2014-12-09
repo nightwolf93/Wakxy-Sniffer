@@ -17,6 +17,9 @@
 #define TXT_UI_BUTTON_START_CAPTURE "Démarrer la capture"
 #define TXT_UI_BUTTON_STOP_CAPTURE "Arrêter la capture"
 
+#define TXT_UI_TABLE_PACKET_SERVER "SMSG"
+#define TXT_UI_TABLE_PACKET_CLIENT "CMSG"
+
 //define all usefull text for console
 #define TXT_LOG_DEFAULT "Bienvenue sur Wakxy Sniffer !"
 #define TXT_LOG_RELOAD_SETTINGS "Rechargement des fichiers de configuration ! Le proxy et la capture va être arrêté"
