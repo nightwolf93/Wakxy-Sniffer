@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QObject>
 #include <QtNetwork>
 #include <QMainWindow>
 #include <QSettings>
@@ -18,6 +19,7 @@ class MainWindow;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
+    Q_ENUMS(PacketTableColumns)
 
 public:
     //packet table enum
@@ -31,6 +33,7 @@ public:
         HEX,
     };
 
+public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 

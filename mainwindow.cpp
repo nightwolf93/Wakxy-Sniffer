@@ -193,25 +193,25 @@ void MainWindow::AddPacketToTable(PacketEditor *packetEditor)
     QTreeWidgetItem* item = new QTreeWidgetItem;
 
     //count packet
-    item->setText(PacketTableColumns::NUMBER, QString::number(m_sniffer->getCountPackets()));
+    item->setText(MainWindow::NUMBER, QString::number(m_sniffer->getCountPackets()));
 
     //packet type
     if (packetEditor->getPacketType() == PacketEditor::PACKET_SERVER)
-        item->setText(PacketTableColumns::TYPE, TXT_UI_TABLE_PACKET_SERVER);
+        item->setText(MainWindow::TYPE, TXT_UI_TABLE_PACKET_SERVER);
     else
-        item->setText(PacketTableColumns::TYPE, TXT_UI_TABLE_PACKET_CLIENT);
+        item->setText(MainWindow::TYPE, TXT_UI_TABLE_PACKET_CLIENT);
 
     //size
-    item->setText(PacketTableColumns::SIZE, QString::number(packetEditor->getSize()));
+    item->setText(MainWindow::SIZE, QString::number(packetEditor->getSize()));
 
     //opcode
-    item->setText(PacketTableColumns::OPCODE, QString::number(packetEditor->getOpcode()));
+    item->setText(MainWindow::OPCODE, QString::number(packetEditor->getOpcode()));
 
     //ASCII
-    item->setText(PacketTableColumns::ASCII, Utils::ToASCII(packetEditor->getPacket()));
+    item->setText(MainWindow::ASCII, Utils::ToASCII(packetEditor->getPacket()));
 
     //HEX
-    item->setText(PacketTableColumns::HEX, Utils::ToHexString(packetEditor->getPacket()));
+    item->setText(MainWindow::HEX, Utils::ToHexString(packetEditor->getPacket()));
 
     //add item
     ui->treeWidgetPacket->addTopLevelItem(item);

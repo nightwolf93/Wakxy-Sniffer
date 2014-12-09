@@ -1,6 +1,7 @@
 #ifndef PROXY_H
 #define PROXY_H
 
+#include <QObject>
 #include <QtNetwork>
 #include <QTcpServer>
 #include <QList>
@@ -20,15 +21,17 @@ struct Packet
 //list of packet
 typedef QList<Packet> Packets;
 
+
 //sniffer class
 //help to make a sniffer
 //packet sniffing can be getted by getPackets()
 class Sniffer : public QObject
 {
-
     Q_OBJECT
+    Q_ENUMS(SnifferState)
 
 public:
+    //state
     enum SnifferState
     {
         START,

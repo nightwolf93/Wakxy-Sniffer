@@ -196,6 +196,11 @@ void Sniffer::Stop()
     m_remoteSocket->abort(); //2 close the remote socket
     m_proxy->close(); //3 stop the proxy
 
+    //reset packet size
+    m_remotePktSize = 0;
+    m_localPktSize = 0;
+
+    //state sniffer
     m_snifferState = STOP;
 }
 

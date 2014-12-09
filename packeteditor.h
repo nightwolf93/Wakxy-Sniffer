@@ -1,25 +1,25 @@
 #ifndef PACKETEDITOR_H
 #define PACKETEDITOR_H
 
+#include <QObject>
 #include <QtNetwork>
 #include <QTcpServer>
 #include "sniffer.h"
 
-class PacketEditor
+//packet type
+class PacketEditor : public QObject
 {
+    Q_OBJECT
+    Q_ENUMS(PacketType)
+
 public:
-    //====================
-    //enums ==============
-    //packet type
-    //server or client
     enum PacketType
     {
         PACKET_SERVER,
         PACKET_CLIENT,
     };
-    //======================
 
-
+public:
     PacketEditor(QByteArray packet, PacketType packetType);
 
     //====================

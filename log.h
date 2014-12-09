@@ -1,15 +1,15 @@
 #ifndef LOG_H
 #define LOG_H
 
+#include <QObject>
 #include <QTextBrowser>
 #include <QString>
 #include <QScrollBar>
 
-
-class Log
+class Log : public QObject
 {
-private:
-    QTextEdit* m_parent;
+    Q_OBJECT
+    Q_ENUMS(LogLevel)
 
 public:
     enum LogLevel
@@ -19,7 +19,12 @@ public:
         INFO, //blue
     };
 
+private:
+    QTextEdit* m_parent;
+
+public:
     Log(QTextBrowser* parent);
+
     void Add(LogLevel level, QString message);
     void Clear();
 
