@@ -15,8 +15,8 @@ Sniffer::Sniffer(QString adresse, qint16 port)
     m_adresse = QHostAddress(adresse);
     m_port = port;
 
-    m_snifferState = STOP;
-    m_captureState = STOP;
+    m_proxyState = SnifferState::STOP;
+    m_captureState = SnifferState::STOP;
 
     //===================
     //events link
@@ -26,12 +26,27 @@ Sniffer::Sniffer(QString adresse, qint16 port)
     connect(m_remoteSocket, SIGNAL(disconnected()), this, SLOT(OnRemoteDisconnect()));
     connect(m_remoteSocket, SIGNAL(readyRead()), this, SLOT(OnRemovePacketRecv()));
     connect(m_remoteSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(OnRemoteError(QAbstractSocket::SocketError)));
-;
+
     //proxy
     connect(m_proxy, SIGNAL(newConnection()), this, SLOT(OnProxyConnect()));
     //===============================================================
 
 }
+
+//=====================
+//SETTER & GETTER =====
+//=====================
+
+void Sniffer::setCaptureState(SnifferState state)
+{
+    m_captureState = state;
+
+    if(state == STOP)
+    {
+        m_countPackets = 0;
+    }
+}
+
 
 //=====================
 //SLOTS & SIGNALS =====
@@ -174,6 +189,7 @@ void Sniffer::OnProxyConnect()
 //=========================
 //METHODS =================
 //=========================
+
 void Sniffer::Start()
 {
     if (!this->m_proxy->listen(QHostAddress::LocalHost, m_port))
@@ -182,7 +198,7 @@ void Sniffer::Start()
         return;
     }
 
-    m_snifferState = START;
+    m_proxyState = START;
 }
 
 void Sniffer::Stop()
@@ -201,27 +217,30 @@ void Sniffer::Stop()
     m_localPktSize = 0;
 
     //state sniffer
-    m_snifferState = STOP;
+    m_proxyState = STOP;
+    StopCapture();
 }
-
-
-void Sniffer::StartCapture()
-{
-}
-
 
 void Sniffer::QueuePacket(Packet packet, bool isLocalPacket)
 {
     if(isLocalPacket)
     {
         m_remoteSocket->write(packet.raw);
-        m_countPackets++;
-        LocalPacketSend(packet);
+
+        if(m_captureState == START)
+        {
+            LocalPacketSend(packet);
+            m_countPackets++;
+        }
     }
     else
     {
         m_localSocket->write(packet.raw);
-        m_countPackets++;
-        RemotePacketSend(packet);
+
+        if(m_captureState == START)
+        {
+            RemotePacketSend(packet);
+            m_countPackets++;
+        }
     }
 }

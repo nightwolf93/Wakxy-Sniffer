@@ -29,6 +29,7 @@ class Sniffer : public QObject
 {
     Q_OBJECT
     Q_ENUMS(SnifferState)
+    Q_ENUMS(CaptureState)
 
 public:
     //state
@@ -51,7 +52,7 @@ private:
     QHostAddress m_adresse;
     qint16 m_port;
 
-    SnifferState m_snifferState;
+    SnifferState m_proxyState;
     SnifferState m_captureState;
 
     int m_countPackets;
@@ -91,21 +92,23 @@ public:
     void Start();
     void Stop();
 
-    void StartCapture();
-    void StopCapture();
+    void StartCapture() { m_captureState = SnifferState::START; }
+    void StopCapture() { m_captureState = SnifferState::STOP; }
 
     void QueuePacket(Packet packet, bool isLocalPacket);
 
-    Packets getPackets() { return this->m_packets; }
-    QTcpServer* getProxy() { return this->m_proxy; }
+    Packets getPackets() { return m_packets; }
+    QTcpServer* getProxy() { return m_proxy; }
 
-    QTcpSocket* getRemoteSocket() { return this->m_remoteSocket; }
-    QTcpSocket* getLocalSocket() { return this->m_localSocket; }
+    QTcpSocket* getRemoteSocket() { return m_remoteSocket; }
+    QTcpSocket* getLocalSocket() { return m_localSocket; }
 
-    SnifferState getSnifferState() { return this->m_snifferState; }
-    SnifferState getCaptureState() { return this->m_snifferState; }
+    SnifferState getProxyState() { return m_proxyState; }
+    SnifferState getCaptureState() { return m_captureState; }
+    void setCaptureState(SnifferState state);
 
-    int getCountPackets() { return this->m_countPackets; }
+    int getCountPackets() { return m_countPackets; }
+    void resetCountPackets() { m_countPackets = 0; }
 };
 
 #endif // PROXY_H

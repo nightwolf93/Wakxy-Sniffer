@@ -37,7 +37,7 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-public slots:
+private slots:
     void OnLocalConnect();
     void OnLocalDisconnect();
     void OnLocalPacketRecv();
@@ -53,7 +53,12 @@ public slots:
     void OnProxyConnection();
 
     void UpdateProxyState();
+    void UpadteCaptureState();
+
     void ReloadConf();
+
+    void ClearLog();
+    void ClearTable();
 
 private:
     Ui::MainWindow *ui;

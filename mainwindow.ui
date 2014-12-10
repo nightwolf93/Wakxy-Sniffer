@@ -49,7 +49,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Commencer la capture</string>
+     <string>Démarrer la capture</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButtonSendPacket">
@@ -92,9 +92,9 @@ p, li { white-space: pre-wrap; }
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>10</y>
+      <y>40</y>
       <width>1061</width>
-      <height>261</height>
+      <height>231</height>
      </rect>
     </property>
     <column>
@@ -158,6 +158,32 @@ p, li { white-space: pre-wrap; }
     </property>
     <property name="text">
      <string>Recharger le fichier de configuration</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButtonClearLog">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>280</y>
+      <width>81</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Vider les logs</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButtonClearTable">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>91</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Vider le tableau</string>
     </property>
    </widget>
   </widget>

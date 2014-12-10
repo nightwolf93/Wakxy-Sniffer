@@ -49,7 +49,11 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_sniffer, SIGNAL(RemotePacketSend(Packet)), this, SLOT(OnRemotePacketSend(Packet)));
 
     connect(ui->pushButtonProxy, SIGNAL(clicked()), this, SLOT(UpdateProxyState()));
+    connect(ui->pushButtonCapture, SIGNAL(clicked()), this, SLOT(UpdateCaptureState()));
     connect(ui->pushButtonReloadConf, SIGNAL(clicked()), this, SLOT(ReloadConf()));
+
+    connect(ui->pushButtonClearLog, SIGNAL(clicked()), this, SLOT(ClearLog()));
+    connect(ui->pushButtonClearTable, SIGNAL(clicked()), this, SLOT(ClearTable()));
     //==============
 }
 
@@ -63,6 +67,20 @@ MainWindow::~MainWindow()
 //===================================
 //EVENT =============================
 //===================================
+
+//================
+//ui =============
+
+void MainWindow::ClearLog()
+{
+    m_log->Clear();
+}
+
+void MainWindow::ClearTable()
+{
+    ui->treeWidgetPacket->clear();
+    m_sniffer->resetCountPackets();
+}
 
 //================
 //local ==========
@@ -124,8 +142,8 @@ void MainWindow::OnRemotePacketSend(Packet packet)
      m_log->Add(Log::INFO, TXT_LOG_REMOTE_PACKET_SEND);
 }
 
-//================
-//proxy ==========
+//===================
+//proxy & capture ===
 
 void MainWindow::OnProxyConnection()
 {
@@ -134,7 +152,16 @@ void MainWindow::OnProxyConnection()
 
 void MainWindow::UpdateProxyState()
 {
-    setProxyState((m_sniffer->getSnifferState() == Sniffer::START) ? Sniffer::STOP : Sniffer::START);
+    setProxyState((m_sniffer->getProxyState() == Sniffer::START) ? Sniffer::STOP : Sniffer::START);
+}
+
+//capture state
+//enable/disable event *PacketSend
+void MainWindow::UpadteCaptureState()
+{
+   m_sniffer->setCaptureState(
+               (m_sniffer->getCaptureState() == Sniffer::START) ? Sniffer::START : Sniffer::STOP
+           );
 }
 
 //================
@@ -241,3 +268,4 @@ void MainWindow::ApplySettings()
     //ui update
     ui->labelServer->setText(TXT_UI_LABEL_SERVER + m_authServer.toString() + ":" + QString::number(m_authPort));
 }
+
