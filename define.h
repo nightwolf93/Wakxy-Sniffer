@@ -20,6 +20,14 @@
 #define TXT_UI_TABLE_PACKET_SERVER "SMSG"
 #define TXT_UI_TABLE_PACKET_CLIENT "CMSG"
 
+#define TXT_UI_ACTION_FILETYPE "Wakxy json file (*.wxy)"
+#define TXT_UI_ACTION_SAVE_AS "Sauvegarder ..."
+#define TXT_UI_ACTION_OPEN "Ouvrir ..."
+
+#define TXT_UI_ACTION_SAVE_WARNING_FILENAME "Veuillez saisir un nom de fichier"
+#define TXT_UI_ACTION_SAVE_WARNING_WRITE_FAIL "Impossible d'écrire dans le fichier"
+#define TXT_UI_ACTION_SAVE_WARNING_READ_FAIL "Impossible de lire le fichier"
+
 //define all usefull text for console
 #define TXT_LOG_DEFAULT "Bienvenue sur Wakxy Sniffer !"
 #define TXT_LOG_RELOAD_SETTINGS "Rechargement des fichiers de configuration ! Le proxy et la capture va être arrêté"

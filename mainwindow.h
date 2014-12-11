@@ -6,6 +6,7 @@
 #include <QMainWindow>
 #include <QSettings>
 #include <QTreeWidget>
+#include <QFileDialog>
 
 #include "sniffer.h" //sniffer helper
 #include "log.h" //log helper
@@ -53,16 +54,15 @@ private slots:
     void OnRemotePacketSend(Packet packet);
 
     void OnProxyConnection();
-
     void UpdateProxyState();
     void UpdateCaptureState();
 
     void ReloadConf();
-
     void ClearLog();
-
     void ClearTable();
     void PacketZoom(QTreeWidgetItem* item);
+    void ActionOpen();
+    void ActionSave();
 
 private:
     Ui::MainWindow *ui;
@@ -85,6 +85,10 @@ private:
 
     void setProxyState(Sniffer::SnifferState state);
     void setCaptureState(Sniffer::SnifferState state);
+
+    void SaveCapture(); //save all captured packets
+    void LoadCapture(); //load all captured packets
+
 };
 
 #endif // MAINWINDOW_H

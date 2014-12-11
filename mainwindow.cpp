@@ -57,6 +57,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pushButtonClearTable, SIGNAL(clicked()), this, SLOT(ClearTable()));
 
     connect(ui->treeWidgetPacket, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(PacketZoom(QTreeWidgetItem*)));
+    connect(ui->actionOuvrir, SIGNAL(triggered()), this, SLOT(ActionOpen()));
+    connect(ui->actionSauvegarder, SIGNAL(triggered()), this, SLOT(ActionSave()));
     //==============
 }
 
@@ -95,6 +97,16 @@ void MainWindow::PacketZoom(QTreeWidgetItem *item)
         PacketZoomDialog* dialog = new PacketZoomDialog(itr.value(), this);
         dialog->show();
     }
+}
+
+void MainWindow::ActionOpen()
+{
+    LoadCapture();
+}
+
+void MainWindow::ActionSave()
+{
+    SaveCapture();
 }
 
 //================
@@ -271,6 +283,65 @@ void MainWindow::AddPacketToTable(PacketEditor *packetEditor)
     //add item
     ui->treeWidgetPacket->addTopLevelItem(item);
     m_tableItemPackets.insert(item, packetEditor);
+}
+
+void MainWindow::LoadCapture()
+{
+    QString filename = QFileDialog::getOpenFileName(this, TXT_UI_ACTION_OPEN, "", TXT_UI_ACTION_FILETYPE);
+
+    if(filename.isNull())
+        return;
+
+    QFile loadFile(filename);
+
+    if (!loadFile.open(QIODevice::ReadOnly)) //try open it in readOnly
+    {
+        qWarning(TXT_UI_ACTION_SAVE_WARNING_READ_FAIL);
+        return;
+    }
+
+    QByteArray data = loadFile.readAll();
+    QJsonDocument loadDoc(QJsonDocument::fromJson(data));
+
+    //@TODO END THIS
+}
+
+void MainWindow::SaveCapture()
+{
+
+    QDateTime datetime = QDateTime::currentDateTime(); //current date time
+    QString defaultFileName = "packets_"+datetime.toString("yyyyMMddhhmmss")+".wxy"; //default file name
+
+    //save dialog
+    QString filename = QFileDialog::getSaveFileName(this, TXT_UI_ACTION_SAVE_AS, defaultFileName, TXT_UI_ACTION_FILETYPE);
+
+    //file is null capture is wrong
+    if(filename.isNull())
+        return;
+
+    QFile saveFile(filename); //create file
+    if (!saveFile.open(QIODevice::WriteOnly)) //try open it in readOnly
+    {
+        qWarning(TXT_UI_ACTION_SAVE_WARNING_WRITE_FAIL);
+        return;
+    }
+
+    //=====================================
+    //create a json object of packets
+    //@TODO MAKE KEY FOR THE ARRAY
+    QJsonArray packetsArray;
+    for(MwTablePackets::iterator itr = m_tableItemPackets.begin(); itr != m_tableItemPackets.end(); ++itr)
+    {
+        QJsonValue value;
+        value = Utils::ToHexString(itr.value()->getPacket());
+        packetsArray.append(value);
+    }
+    //====================================
+
+    //save the file
+    QJsonDocument doc(packetsArray);
+    saveFile.write(doc.toJson());
+    saveFile.close();
 }
 
 //===================================
