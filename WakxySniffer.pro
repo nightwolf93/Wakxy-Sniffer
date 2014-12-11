@@ -17,13 +17,16 @@ SOURCES += main.cpp\
     sniffer.cpp \
     log.cpp \
     packeteditor.cpp \
-    utils.cpp
+    utils.cpp \
+    packetzoomdialog.cpp
 
 HEADERS  += mainwindow.h \
     define.h \
     sniffer.h \
     log.h \
     packeteditor.h \
-    utils.h
+    utils.h \
+    packetzoomdialog.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    packetzoomdialog.ui

@@ -15,8 +15,8 @@ Sniffer::Sniffer(QString adresse, qint16 port)
     m_adresse = QHostAddress(adresse);
     m_port = port;
 
-    m_proxyState = SnifferState::STOP;
-    m_captureState = SnifferState::STOP;
+    m_proxyState = Sniffer::STOP;
+    m_captureState = Sniffer::STOP;
 
     //===================
     //events link
@@ -112,7 +112,6 @@ void Sniffer::OnLocalPacketRecv()
 //remote
 void Sniffer::OnRemoteConnect()
 {
-
     RemoteConnect();
 }
 
@@ -203,9 +202,12 @@ void Sniffer::Start()
 
 void Sniffer::Stop()
 {
-    if(m_localSocket) //1 close the local socket
+    //1 close the local socket
+    if(m_localSocket)
     {
-        m_localSocket->abort();
+        if (m_localSocket->state() == QTcpSocket::ConnectedState)
+            m_localSocket->abort();
+
         m_localSocket->deleteLater();
     }
 

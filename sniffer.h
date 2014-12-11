@@ -92,8 +92,8 @@ public:
     void Start();
     void Stop();
 
-    void StartCapture() { m_captureState = SnifferState::START; }
-    void StopCapture() { m_captureState = SnifferState::STOP; }
+    void StartCapture() { m_captureState = Sniffer::START; }
+    void StopCapture() { m_captureState = Sniffer::STOP; }
 
     void QueuePacket(Packet packet, bool isLocalPacket);
 

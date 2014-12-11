@@ -26,7 +26,10 @@
 
 #define TXT_LOG_PROXY_START "Proxy démarré"
 #define TXT_LOG_PROXY_STOP "Proxy arreté"
-#define TXT_LOG_PROXY_CONNEXION "Proxy connection"
+#define TXT_LOG_PROXY_CONNEXION "Connection au proxy"
+
+#define TXT_LOG_CAPTURE_START "Capture démarré"
+#define TXT_LOG_CAPTURE_STOP "Capture arreté"
 
 #define TXT_LOG_REMOTE_CONNECT "Serveur distant connecté"
 #define TXT_LOG_REMOTE_DISCONNECT "Serveur distant déconnecté"

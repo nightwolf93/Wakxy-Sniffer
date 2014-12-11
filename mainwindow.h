@@ -16,6 +16,8 @@ namespace Ui {
 class MainWindow;
 }
 
+typedef QHash<QTreeWidgetItem*, PacketEditor*> MwTablePackets;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -53,28 +55,36 @@ private slots:
     void OnProxyConnection();
 
     void UpdateProxyState();
-    void UpadteCaptureState();
+    void UpdateCaptureState();
 
     void ReloadConf();
 
     void ClearLog();
+
     void ClearTable();
+    void PacketZoom(QTreeWidgetItem* item);
 
 private:
     Ui::MainWindow *ui;
-    QSettings *m_settings;
-    Sniffer* m_sniffer;
-    Log* m_log;
 
-    //setting in file
+    QSettings *m_settings; //settings
+    Sniffer* m_sniffer; //sniffer
+    Log* m_log; //log
+
+    MwTablePackets m_tableItemPackets;
+
+    //===============================
+    //setting from file =============
     QHostAddress m_authServer;
     qint16 m_authPort;
+    //===============================
 
     void InitSettings();
     void ApplySettings();
     void AddPacketToTable(PacketEditor* packetEditor);
 
     void setProxyState(Sniffer::SnifferState state);
+    void setCaptureState(Sniffer::SnifferState state);
 };
 
 #endif // MAINWINDOW_H

@@ -4,6 +4,7 @@
 #include "log.h"
 #include "packeteditor.h"
 #include "utils.h"
+#include "packetzoomdialog.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -54,6 +55,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(ui->pushButtonClearLog, SIGNAL(clicked()), this, SLOT(ClearLog()));
     connect(ui->pushButtonClearTable, SIGNAL(clicked()), this, SLOT(ClearTable()));
+
+    connect(ui->treeWidgetPacket, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(PacketZoom(QTreeWidgetItem*)));
     //==============
 }
 
@@ -79,7 +82,19 @@ void MainWindow::ClearLog()
 void MainWindow::ClearTable()
 {
     ui->treeWidgetPacket->clear();
+    m_tableItemPackets.clear();
+
     m_sniffer->resetCountPackets();
+}
+
+void MainWindow::PacketZoom(QTreeWidgetItem *item)
+{
+    MwTablePackets::iterator itr = m_tableItemPackets.find(item);
+    if(itr != m_tableItemPackets.end())
+    {
+        PacketZoomDialog* dialog = new PacketZoomDialog(itr.value(), this);
+        dialog->show();
+    }
 }
 
 //================
@@ -155,13 +170,16 @@ void MainWindow::UpdateProxyState()
     setProxyState((m_sniffer->getProxyState() == Sniffer::START) ? Sniffer::STOP : Sniffer::START);
 }
 
-//capture state
-//enable/disable event *PacketSend
-void MainWindow::UpadteCaptureState()
+void MainWindow::UpdateCaptureState()
 {
-   m_sniffer->setCaptureState(
-               (m_sniffer->getCaptureState() == Sniffer::START) ? Sniffer::START : Sniffer::STOP
-           );
+   if(m_sniffer->getCaptureState() == Sniffer::STOP)
+   {
+        setCaptureState(Sniffer::START);
+   }
+   else
+   {
+       setCaptureState(Sniffer::STOP);
+   }
 }
 
 //================
@@ -199,6 +217,7 @@ void MainWindow::setProxyState(Sniffer::SnifferState state)
         //==============
 
         m_log->Add(Log::INFO, TXT_LOG_PROXY_START);
+        setCaptureState(Sniffer::START);
     }
     else
     {
@@ -212,6 +231,23 @@ void MainWindow::setProxyState(Sniffer::SnifferState state)
         //=================
 
         m_log->Add(Log::ERROR, TXT_LOG_PROXY_STOP);
+        setCaptureState(Sniffer::STOP);
+    }
+}
+
+void MainWindow::setCaptureState(Sniffer::SnifferState state)
+{
+    if(state == Sniffer::START)
+    {
+         ui->pushButtonCapture->setText(TXT_UI_BUTTON_STOP_CAPTURE);
+         m_sniffer->setCaptureState(Sniffer::START);
+         m_log->Add(Log::INFO, TXT_LOG_CAPTURE_START);
+    }
+    else
+    {
+         ui->pushButtonCapture->setText(TXT_UI_BUTTON_START_CAPTURE);
+         m_sniffer->setCaptureState(Sniffer::STOP);
+         m_log->Add(Log::ERROR, TXT_LOG_CAPTURE_STOP);
     }
 }
 
@@ -219,8 +255,7 @@ void MainWindow::AddPacketToTable(PacketEditor *packetEditor)
 {
     QTreeWidgetItem* item = new QTreeWidgetItem;
 
-    //count packet
-    item->setText(MainWindow::NUMBER, QString::number(m_sniffer->getCountPackets()));
+    item->setText(MainWindow::NUMBER, QString::number(m_sniffer->getCountPackets())); //count packet
 
     //packet type
     if (packetEditor->getPacketType() == PacketEditor::PACKET_SERVER)
@@ -228,20 +263,14 @@ void MainWindow::AddPacketToTable(PacketEditor *packetEditor)
     else
         item->setText(MainWindow::TYPE, TXT_UI_TABLE_PACKET_CLIENT);
 
-    //size
-    item->setText(MainWindow::SIZE, QString::number(packetEditor->getSize()));
-
-    //opcode
-    item->setText(MainWindow::OPCODE, QString::number(packetEditor->getOpcode()));
-
-    //ASCII
-    item->setText(MainWindow::ASCII, Utils::ToASCII(packetEditor->getPacket()));
-
-    //HEX
-    item->setText(MainWindow::HEX, Utils::ToHexString(packetEditor->getPacket()));
+    item->setText(MainWindow::SIZE, QString::number(packetEditor->getSize()));     //size
+    item->setText(MainWindow::OPCODE, QString::number(packetEditor->getOpcode()));  //opcode
+    item->setText(MainWindow::ASCII, Utils::ToASCII(packetEditor->getPacket()));   //ASCII
+    item->setText(MainWindow::HEX, Utils::ToHexString(packetEditor->getPacket())); //HEX
 
     //add item
     ui->treeWidgetPacket->addTopLevelItem(item);
+    m_tableItemPackets.insert(item, packetEditor);
 }
 
 //===================================
