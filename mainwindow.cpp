@@ -11,6 +11,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    m_sniffer_packet_count = 0;
 
     //===============
     //settings loader
@@ -85,8 +86,7 @@ void MainWindow::ClearTable()
 {
     ui->treeWidgetPacket->clear();
     m_tableItemPackets.clear();
-
-    m_sniffer->resetCountPackets();
+    m_sniffer_packet_count = 0;
 }
 
 void MainWindow::PacketZoom(QTreeWidgetItem *item)
@@ -265,9 +265,10 @@ void MainWindow::setCaptureState(Sniffer::SnifferState state)
 
 void MainWindow::AddPacketToTable(PacketEditor *packetEditor)
 {
+    m_sniffer_packet_count++;
     QTreeWidgetItem* item = new QTreeWidgetItem;
 
-    item->setText(MainWindow::NUMBER, QString::number(m_sniffer->getCountPackets())); //count packet
+    item->setText(MainWindow::NUMBER, QString::number(m_sniffer_packet_count)); //count packet
 
     //packet type
     if (packetEditor->getPacketType() == PacketEditor::PACKET_SERVER)
@@ -293,17 +294,30 @@ void MainWindow::LoadCapture()
         return;
 
     QFile loadFile(filename);
-
     if (!loadFile.open(QIODevice::ReadOnly)) //try open it in readOnly
     {
         qWarning(TXT_UI_ACTION_SAVE_WARNING_READ_FAIL);
         return;
     }
 
+    //load
     QByteArray data = loadFile.readAll();
     QJsonDocument loadDoc(QJsonDocument::fromJson(data));
+    QJsonObject docJson = loadDoc.object();
+    QJsonArray packetsArray = docJson["packets"].toArray();
 
-    //@TODO END THIS
+    for(int packetIndex = 0; packetIndex < packetsArray.size(); ++packetIndex)
+    {
+        QJsonObject packet = packetsArray[packetIndex].toObject();
+
+        QString bytesString = packet["byteArray"].toString();
+        int packetType = packet["type"].toInt();
+
+        PacketEditor* packetEditor = new PacketEditor(Utils::FromHexString(bytesString), (PacketEditor::PacketType)packetType);
+        AddPacketToTable(packetEditor);
+    }
+
+    m_log->Add(Log::INFO, "Fichier chargé avec succés");
 }
 
 void MainWindow::SaveCapture()
@@ -328,18 +342,30 @@ void MainWindow::SaveCapture()
 
     //=====================================
     //create a json object of packets
-    //@TODO MAKE KEY FOR THE ARRAY
     QJsonArray packetsArray;
+
+    int level = -1;
     for(MwTablePackets::iterator itr = m_tableItemPackets.begin(); itr != m_tableItemPackets.end(); ++itr)
     {
-        QJsonValue value;
-        value = Utils::ToHexString(itr.value()->getPacket());
-        packetsArray.append(value);
+        QJsonObject packet;
+
+        packet["byteArray"] = Utils::ToHexString(itr.value()->getPacket());
+        packet["type"] = itr.value()->getPacketType();
+
+        if(itr.key()->text(PacketTableColumns::NUMBER).toInt() < level)
+            packetsArray.push_front(packet);
+        else
+            packetsArray.push_back(packet);
+
+        level = itr.key()->text(PacketTableColumns::NUMBER).toInt();
     }
+
+    QJsonObject obj;
+    obj["packets"] = packetsArray;
     //====================================
 
     //save the file
-    QJsonDocument doc(packetsArray);
+    QJsonDocument doc(obj);
     saveFile.write(doc.toJson());
     saveFile.close();
 }

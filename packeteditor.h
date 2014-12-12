@@ -29,6 +29,7 @@ public:
     int getLength() { return (int)m_packet_reader->device()->bytesAvailable(); }
     ushort getSize() { return m_size; }
     ushort getOpcode() { return m_opcode; }
+    //=====================
 
 
 private:    

@@ -108,6 +108,8 @@ public:
     void setCaptureState(SnifferState state);
 
     int getCountPackets() { return m_countPackets; }
+
+private:
     void resetCountPackets() { m_countPackets = 0; }
 };
 

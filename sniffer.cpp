@@ -218,6 +218,9 @@ void Sniffer::Stop()
     m_remotePktSize = 0;
     m_localPktSize = 0;
 
+    //reset count packet
+    resetCountPackets();
+
     //state sniffer
     m_proxyState = STOP;
     StopCapture();

@@ -6,6 +6,7 @@
 #include <QMainWindow>
 #include <QSettings>
 #include <QTreeWidget>
+#include <QWidgetItem>
 #include <QFileDialog>
 
 #include "sniffer.h" //sniffer helper
@@ -41,25 +42,33 @@ public:
     ~MainWindow();
 
 private slots:
+    //local
     void OnLocalConnect();
     void OnLocalDisconnect();
     void OnLocalPacketRecv();
     void OnLocalSocketError(QAbstractSocket::SocketError);
     void OnLocalPacketSend(Packet packet);
 
+    //remote
     void OnRemoteConnect();
     void OnRemoteDisconnect();
     void OnRemotePacketRecv();
     void OnRemoteSocketError(QAbstractSocket::SocketError /*socketError*/);
     void OnRemotePacketSend(Packet packet);
 
+    //proxy
     void OnProxyConnection();
     void UpdateProxyState();
     void UpdateCaptureState();
 
+    //conf
     void ReloadConf();
+
+    //log
     void ClearLog();
     void ClearTable();
+
+    //packets
     void PacketZoom(QTreeWidgetItem* item);
     void ActionOpen();
     void ActionSave();
@@ -69,6 +78,7 @@ private:
 
     QSettings *m_settings; //settings
     Sniffer* m_sniffer; //sniffer
+    int m_sniffer_packet_count;
     Log* m_log; //log
 
     MwTablePackets m_tableItemPackets;
@@ -86,8 +96,8 @@ private:
     void setProxyState(Sniffer::SnifferState state);
     void setCaptureState(Sniffer::SnifferState state);
 
-    void SaveCapture(); //save all captured packets
-    void LoadCapture(); //load all captured packets
+    void SaveCapture();
+    void LoadCapture();
 
 };
 
