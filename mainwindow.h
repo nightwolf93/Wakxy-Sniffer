@@ -87,6 +87,7 @@ private:
     //setting from file =============
     QHostAddress m_authServer;
     qint16 m_authPort;
+    QString m_scriptDir; //script directory for the packetEditor
     //===============================
 
     void InitSettings();
@@ -98,7 +99,6 @@ private:
 
     void SaveCapture();
     void LoadCapture();
-
 };
 
 #endif // MAINWINDOW_H

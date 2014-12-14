@@ -133,7 +133,7 @@ void MainWindow::OnLocalSocketError(QAbstractSocket::SocketError /*socketError*/
 
 void MainWindow::OnLocalPacketSend(Packet packet)
 {
-    PacketEditor* packetEditor = new PacketEditor(packet.raw, PacketEditor::PACKET_CLIENT);
+    PacketEditor* packetEditor = new PacketEditor(packet.raw, PacketEditor::PACKET_CLIENT, m_scriptDir);
     AddPacketToTable(packetEditor);
 
     m_log->Add(Log::INFO, TXT_LOG_LOCAL_PACKET_SEND);
@@ -163,7 +163,7 @@ void MainWindow::OnRemoteSocketError(QAbstractSocket::SocketError /*socketError*
 
 void MainWindow::OnRemotePacketSend(Packet packet)
 {
-     PacketEditor* packetEditor = new PacketEditor(packet.raw, PacketEditor::PACKET_SERVER);
+     PacketEditor* packetEditor = new PacketEditor(packet.raw, PacketEditor::PACKET_SERVER, m_scriptDir);
      AddPacketToTable(packetEditor);
 
      m_log->Add(Log::INFO, TXT_LOG_REMOTE_PACKET_SEND);
@@ -313,11 +313,11 @@ void MainWindow::LoadCapture()
         QString bytesString = packet["byteArray"].toString();
         int packetType = packet["type"].toInt();
 
-        PacketEditor* packetEditor = new PacketEditor(Utils::FromHexString(bytesString), (PacketEditor::PacketType)packetType);
+        PacketEditor* packetEditor = new PacketEditor(Utils::FromHexString(bytesString), (PacketEditor::PacketType)packetType, m_scriptDir);
         AddPacketToTable(packetEditor);
     }
 
-    m_log->Add(Log::INFO, "Fichier chargé avec succés");
+    m_log->Add(Log::INFO, TXT_LOG_FILE_LOAD);
 }
 
 void MainWindow::SaveCapture()
@@ -352,12 +352,12 @@ void MainWindow::SaveCapture()
         packet["byteArray"] = Utils::ToHexString(itr.value()->getPacket());
         packet["type"] = itr.value()->getPacketType();
 
-        if(itr.key()->text(PacketTableColumns::NUMBER).toInt() < level)
+        if(itr.key()->text(MainWindow::NUMBER).toInt() < level)
             packetsArray.push_front(packet);
         else
             packetsArray.push_back(packet);
 
-        level = itr.key()->text(PacketTableColumns::NUMBER).toInt();
+        level = itr.key()->text(MainWindow::NUMBER).toInt();
     }
 
     QJsonObject obj;
@@ -369,6 +369,7 @@ void MainWindow::SaveCapture()
     saveFile.write(doc.toJson());
     saveFile.close();
 }
+
 
 //===================================
 //SETTINGS ==========================
@@ -386,6 +387,7 @@ void MainWindow::ApplySettings()
     //load setting
     m_authServer = QHostAddress(m_settings->value("auth/server", SETTINGS_DEFAULT_AUTH_SERVER).value<QString>());
     m_authPort = m_settings->value("auth/port", SETTINGS_DEFAULT_AUTH_PORT).value<qint16>();
+    m_scriptDir = m_settings->value("packetEditor/scriptDir", SETTING_PACKETEDITOR_SCRIPT_FOLDER).value<QString>();
 
     //save setting
     m_settings->setValue("auth/server", m_authServer.toString());

@@ -17,8 +17,12 @@ public:
     PacketZoomDialog(PacketEditor* packetEditor, QWidget *parent = 0);
     ~PacketZoomDialog();
 
+public slots:
+    void OnReloadScript();
+
 private:
-    void TableInit();
+    void UpdateUI();
+
 
     Ui::PacketZoomDialog *ui;
     PacketEditor* m_packetEditor;

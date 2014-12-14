@@ -8,6 +8,8 @@
 #define SETTINGS_DEFAULT_AUTH_SERVER "80.239.173.156"
 #define SETTINGS_DEFAULT_AUTH_PORT 5558
 
+#define SETTING_PACKETEDITOR_SCRIPT_FOLDER "./scripts"
+
 //define all usefull text for ui
 #define TXT_UI_LABEL_SERVER "Proxy pour l'adresse "
 
@@ -20,13 +22,16 @@
 #define TXT_UI_TABLE_PACKET_SERVER "SMSG"
 #define TXT_UI_TABLE_PACKET_CLIENT "CMSG"
 
-#define TXT_UI_ACTION_FILETYPE "Wakxy json file (*.wxy)"
+#define TXT_UI_ACTION_FILETYPE "Wakxy JSON file (*.wxy)"
 #define TXT_UI_ACTION_SAVE_AS "Sauvegarder ..."
 #define TXT_UI_ACTION_OPEN "Ouvrir ..."
 
 #define TXT_UI_ACTION_SAVE_WARNING_FILENAME "Veuillez saisir un nom de fichier"
 #define TXT_UI_ACTION_SAVE_WARNING_WRITE_FAIL "Impossible d'écrire dans le fichier"
 #define TXT_UI_ACTION_SAVE_WARNING_READ_FAIL "Impossible de lire le fichier"
+
+#define TXT_UI_LABEL_SCRIPT "Chemin du script : "
+#define TXT_UI_LABEL_FREE_BYTE "Byte non lus : "
 
 //define all usefull text for console
 #define TXT_LOG_DEFAULT "Bienvenue sur Wakxy Sniffer !"
@@ -47,5 +52,8 @@
 #define TXT_LOG_LOCAL_DISCONNECT "Local déconnecté"
 #define TXT_LOG_LOCAL_PACKET_SEND "Le client envoie un packet au serveur distant"
 
+#define TXT_LOG_FILE_LOAD "Fichier chargé"
+
+#define TXT_LOG_
 
 #endif // DEFINE_H
