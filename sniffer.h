@@ -29,7 +29,6 @@ class Sniffer : public QObject
 {
     Q_OBJECT
     Q_ENUMS(SnifferState)
-    Q_ENUMS(CaptureState)
 
 public:
     //state
@@ -64,12 +63,14 @@ signals:
     void LocalDisconnect();
     void LocalError(QAbstractSocket::SocketError socketError);
     void LocalPacketSend(Packet packet);
+    void LocalPacketHook(Packet* packet);
 
     void RemoteConnect();
     void RemotePacketRecv();
     void RemoteDisconnect();
     void RemoteError(QAbstractSocket::SocketError socketError);
     void RemotePacketSend(Packet packet);
+    void RemotePacketHook(Packet* packet);
 
     void ProxyConnect();
 

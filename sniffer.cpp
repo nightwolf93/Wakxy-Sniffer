@@ -230,6 +230,7 @@ void Sniffer::QueuePacket(Packet packet, bool isLocalPacket)
 {
     if(isLocalPacket)
     {
+        LocalPacketHook(&packet);
         m_remoteSocket->write(packet.raw);
 
         if(m_captureState == START)
@@ -240,6 +241,7 @@ void Sniffer::QueuePacket(Packet packet, bool isLocalPacket)
     }
     else
     {
+        RemotePacketHook(&packet);
         m_localSocket->write(packet.raw);
 
         if(m_captureState == START)
