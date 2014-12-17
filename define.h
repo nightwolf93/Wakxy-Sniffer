@@ -9,6 +9,7 @@
 #define SETTINGS_DEFAULT_AUTH_PORT 5558
 
 #define SETTING_PACKETEDITOR_SCRIPT_FOLDER "./scripts"
+#define SETTING_SPOOFING_DEFAULT_FOLDER "./spoofing"
 
 //define all usefull text for ui
 #define TXT_UI_LABEL_SERVER "Proxy pour l'adresse "
@@ -47,13 +48,13 @@
 #define TXT_LOG_REMOTE_CONNECT "Serveur distant connecté"
 #define TXT_LOG_REMOTE_DISCONNECT "Serveur distant déconnecté"
 #define TXT_LOG_REMOTE_PACKET_SEND "Serveur distant envoie un packet au client"
+#define TXT_LOG_REMOTE_PACKET_SPOOFING "L'opcode %1 à été modifié avant d'étre envoyé au client"
 
 #define TXT_LOG_LOCAL_CONNECT "Local connecté"
 #define TXT_LOG_LOCAL_DISCONNECT "Local déconnecté"
 #define TXT_LOG_LOCAL_PACKET_SEND "Le client envoie un packet au serveur distant"
+#define TXT_LOG_LOCAL_PACKET_SPOOFING "L'opcode %1 à été modifié avant d'étre envoyé au serveur"
 
 #define TXT_LOG_FILE_LOAD "Fichier chargé"
-
-#define TXT_LOG_
 
 #endif // DEFINE_H

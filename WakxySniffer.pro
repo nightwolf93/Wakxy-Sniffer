@@ -18,7 +18,8 @@ SOURCES += main.cpp\
     log.cpp \
     packeteditor.cpp \
     utils.cpp \
-    packetzoomdialog.cpp
+    packetzoomdialog.cpp \
+    packetspoofingdialog.cpp
 
 HEADERS  += mainwindow.h \
     define.h \
@@ -26,7 +27,9 @@ HEADERS  += mainwindow.h \
     log.h \
     packeteditor.h \
     utils.h \
-    packetzoomdialog.h
+    packetzoomdialog.h \
+    packetspoofingdialog.h
 
 FORMS    += mainwindow.ui \
-    packetzoomdialog.ui
+    packetzoomdialog.ui \
+    packetspoofingdialog.ui

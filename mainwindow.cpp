@@ -5,6 +5,7 @@
 #include "packeteditor.h"
 #include "utils.h"
 #include "packetzoomdialog.h"
+#include "packetspoofingdialog.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -31,6 +32,11 @@ MainWindow::MainWindow(QWidget *parent) :
     //==============
 
     //==============
+    //hook
+    loadSpoofingPacket();
+    //=============
+
+    //==============
     //event signal
 
     //proxy
@@ -42,6 +48,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_sniffer, SIGNAL(LocalPacketRecv()), this, SLOT(OnLocalPacketRecv()));
     connect(m_sniffer, SIGNAL(LocalError(QAbstractSocket::SocketError)), this, SLOT(OnLocalSocketError(QAbstractSocket::SocketError)));
     connect(m_sniffer, SIGNAL(LocalPacketSend(Packet)), this, SLOT(OnLocalPacketSend(Packet)));
+    connect(m_sniffer, SIGNAL(LocalPacketHook(Packet*)), this, SLOT(OnLocalPacketHook(Packet*)));
 
     //remote
     connect(m_sniffer, SIGNAL(RemoteConnect()), this, SLOT(OnRemoteConnect()));
@@ -49,15 +56,17 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_sniffer, SIGNAL(RemotePacketRecv()), this, SLOT(OnRemotePacketRecv()));
     connect(m_sniffer, SIGNAL(RemoteError(QAbstractSocket::SocketError)), this, SLOT(OnRemoteSocketError(QAbstractSocket::SocketError)));
     connect(m_sniffer, SIGNAL(RemotePacketSend(Packet)), this, SLOT(OnRemotePacketSend(Packet)));
+    connect(m_sniffer, SIGNAL(LocalPacketHook(Packet*)), this, SLOT(OnRemotePacketHook(Packet*)));
 
     connect(ui->pushButtonProxy, SIGNAL(clicked()), this, SLOT(UpdateProxyState()));
     connect(ui->pushButtonCapture, SIGNAL(clicked()), this, SLOT(UpdateCaptureState()));
     connect(ui->pushButtonReloadConf, SIGNAL(clicked()), this, SLOT(ReloadConf()));
+    connect(ui->pushButtonSpoofingPacket, SIGNAL(clicked()), this, SLOT(ShowSpoofingPacket()));
 
     connect(ui->pushButtonClearLog, SIGNAL(clicked()), this, SLOT(ClearLog()));
     connect(ui->pushButtonClearTable, SIGNAL(clicked()), this, SLOT(ClearTable()));
 
-    connect(ui->treeWidgetPacket, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(PacketZoom(QTreeWidgetItem*)));
+    connect(ui->treeWidgetPacket, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowPacketZoom(QTreeWidgetItem*)));
     connect(ui->actionOuvrir, SIGNAL(triggered()), this, SLOT(ActionOpen()));
     connect(ui->actionSauvegarder, SIGNAL(triggered()), this, SLOT(ActionSave()));
     //==============
@@ -89,7 +98,7 @@ void MainWindow::ClearTable()
     m_sniffer_packet_count = 0;
 }
 
-void MainWindow::PacketZoom(QTreeWidgetItem *item)
+void MainWindow::ShowPacketZoom(QTreeWidgetItem *item)
 {
     MwTablePackets::iterator itr = m_tableItemPackets.find(item);
     if(itr != m_tableItemPackets.end())
@@ -97,6 +106,12 @@ void MainWindow::PacketZoom(QTreeWidgetItem *item)
         PacketZoomDialog* dialog = new PacketZoomDialog(itr.value(), this);
         dialog->show();
     }
+}
+
+void MainWindow::ShowSpoofingPacket()
+{
+    PacketSpoofingDialog* dialog = new PacketSpoofingDialog(this);
+    dialog->show();
 }
 
 void MainWindow::ActionOpen()
@@ -139,6 +154,10 @@ void MainWindow::OnLocalPacketSend(Packet packet)
     m_log->Add(Log::INFO, TXT_LOG_LOCAL_PACKET_SEND);
 }
 
+void MainWindow::OnLocalPacketHook(Packet *packet)
+{
+}
+
 //================
 //remote =========
 
@@ -167,6 +186,14 @@ void MainWindow::OnRemotePacketSend(Packet packet)
      AddPacketToTable(packetEditor);
 
      m_log->Add(Log::INFO, TXT_LOG_REMOTE_PACKET_SEND);
+}
+
+void MainWindow::OnRemotePacketHook(Packet *packet)
+{
+    PacketEditor* packetEditor = new PacketEditor(packet->raw, PacketEditor::PACKET_SERVER, m_scriptDir);
+
+    if(spoofingPacket(packet, packetEditor))
+        m_log->Add(Log::INFO, QString(TXT_LOG_REMOTE_PACKET_SPOOFING).arg(packetEditor->getOpcode()));
 }
 
 //===================
@@ -213,6 +240,99 @@ void MainWindow::ReloadConf()
 //===================================
 //METHODS ===========================
 //===================================
+
+QString MainWindow::getSpoofingKey(ushort opcode, PacketEditor::PacketType type)
+{
+    QString key = "";
+
+    (type == PacketEditor::PACKET_CLIENT) ? key += "CMSG" : key += "SMSG";
+    key += QString::number(opcode);
+
+    return key;
+}
+
+bool MainWindow::isSpoofingPacket(PacketEditor *packetEditor)
+{
+    QString key = getSpoofingKey(packetEditor->getOpcode(), packetEditor->getPacketType());
+    return (m_spoofPackets.find(key) != m_spoofPackets.end());
+}
+
+bool MainWindow::spoofingPacket(Packet *packet, PacketEditor *packetEditor)
+{
+   QString key = getSpoofingKey(packetEditor->getOpcode(), packetEditor->getPacketType());
+
+    MwSpoofPacket::iterator itr = m_spoofPackets.find(key);
+    if(itr != m_spoofPackets.end())
+    {
+        packet->raw = itr.value().raw;
+        return true;
+    }
+    else
+        return false;
+}
+
+void MainWindow::loadSpoofingPacket()
+{
+    QDir().mkdir(m_spoofingDir); //check if folder exist, else create it
+    QDir dir(m_spoofingDir);
+    QDirIterator it(dir);
+
+    while(it.hasNext())
+    {
+        it.next();
+        QFileInfo fileInfo = it.fileInfo();
+
+        //file & json file
+        if(fileInfo.isFile() && fileInfo.completeSuffix() == "json")
+        {
+            //read the file
+            QFile loadFile(fileInfo.filePath());
+
+            if (!loadFile.open(QIODevice::ReadOnly)) //try open readOnly
+                return;
+
+            //load
+            QByteArray data = loadFile.readAll();
+            QJsonDocument loadDoc(QJsonDocument::fromJson(data));
+            QJsonObject docJson = loadDoc.object();
+
+            int type = docJson["type"].toInt();
+            int opcode = docJson["opcode"].toInt();
+            QJsonArray rawArray = docJson["raw"].toArray();
+            QString hexString = "";
+
+            for(int rawIndex = 0; rawIndex < rawArray.size(); ++rawIndex)
+                hexString += rawArray[rawIndex].toString();
+
+           //======================
+           //create the struct ====
+           SpoofPacket spoofPacket;
+           spoofPacket.enabled = false;
+           spoofPacket.type = type;
+           spoofPacket.opcode = opcode;
+           spoofPacket.raw = Utils::FromHexString(hexString);
+           spoofPacket.treeItem = new QTreeWidgetItem();
+           //=======================
+
+           //=======================
+           //create tree item ======
+           if (spoofPacket.type == PacketEditor::PACKET_SERVER)
+               spoofPacket.treeItem->setText(0, TXT_UI_TABLE_PACKET_SERVER);
+           else
+               spoofPacket.treeItem->setText(0, TXT_UI_TABLE_PACKET_CLIENT);
+
+           spoofPacket.treeItem->setText(1, QString::number(opcode));  //opcode
+           spoofPacket.treeItem->setData(2, Qt::CheckStateRole, spoofPacket.enabled); //enable
+           //=======================
+
+           QString key = getSpoofingKey(opcode, (PacketEditor::PacketType)type);
+           m_spoofPackets.insert(key, spoofPacket);
+
+           m_log->Add(Log::INFO, QString("L'opcode %1 est usurpé").arg(QString::number(opcode)));
+           loadFile.close();
+        }
+    }
+}
 
 void MainWindow::setProxyState(Sniffer::SnifferState state)
 {
@@ -294,7 +414,7 @@ void MainWindow::LoadCapture()
         return;
 
     QFile loadFile(filename);
-    if (!loadFile.open(QIODevice::ReadOnly)) //try open it in readOnly
+    if (!loadFile.open(QIODevice::ReadOnly)) //try open it readOnly
     {
         qWarning(TXT_UI_ACTION_SAVE_WARNING_READ_FAIL);
         return;
@@ -317,6 +437,7 @@ void MainWindow::LoadCapture()
         AddPacketToTable(packetEditor);
     }
 
+    loadFile.close();
     m_log->Add(Log::INFO, TXT_LOG_FILE_LOAD);
 }
 
@@ -388,10 +509,13 @@ void MainWindow::ApplySettings()
     m_authServer = QHostAddress(m_settings->value("auth/server", SETTINGS_DEFAULT_AUTH_SERVER).value<QString>());
     m_authPort = m_settings->value("auth/port", SETTINGS_DEFAULT_AUTH_PORT).value<qint16>();
     m_scriptDir = m_settings->value("packetEditor/scriptDir", SETTING_PACKETEDITOR_SCRIPT_FOLDER).value<QString>();
+    m_spoofingDir = m_settings->value("packet/spoofingDir", SETTING_SPOOFING_DEFAULT_FOLDER).value<QString>();
 
     //save setting
     m_settings->setValue("auth/server", m_authServer.toString());
     m_settings->setValue("auth/port", m_authPort);
+    m_settings->setValue("packetEdtitor/scriptDir", m_scriptDir);
+    m_settings->setValue("packet/spoofingDir", m_spoofingDir);
 
     //ui update
     ui->labelServer->setText(TXT_UI_LABEL_SERVER + m_authServer.toString() + ":" + QString::number(m_authPort));

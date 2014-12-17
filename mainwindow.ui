@@ -52,9 +52,9 @@
      <string>Démarrer la capture</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButtonSendPacket">
+   <widget class="QPushButton" name="pushButtonSpoofingPacket">
     <property name="enabled">
-     <bool>false</bool>
+     <bool>true</bool>
     </property>
     <property name="geometry">
      <rect>
@@ -65,7 +65,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Envoyer un packet modifié</string>
+     <string>Voir les packets spoofé</string>
     </property>
    </widget>
    <widget class="QTextBrowser" name="textBrowserLog">

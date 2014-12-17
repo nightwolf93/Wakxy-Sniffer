@@ -18,7 +18,17 @@ namespace Ui {
 class MainWindow;
 }
 
-typedef QHash<QTreeWidgetItem*, PacketEditor*> MwTablePackets;
+struct SpoofPacket
+{
+    bool enabled;
+    ushort opcode;
+    int type;
+    QByteArray raw;
+    QTreeWidgetItem* treeItem;
+};
+
+typedef QMap<QTreeWidgetItem*, PacketEditor*> MwTablePackets;
+typedef QMap<QString, SpoofPacket> MwSpoofPacket;
 
 class MainWindow : public QMainWindow
 {
@@ -48,6 +58,7 @@ private slots:
     void OnLocalPacketRecv();
     void OnLocalSocketError(QAbstractSocket::SocketError);
     void OnLocalPacketSend(Packet packet);
+    void OnLocalPacketHook(Packet* packet);
 
     //remote
     void OnRemoteConnect();
@@ -55,6 +66,7 @@ private slots:
     void OnRemotePacketRecv();
     void OnRemoteSocketError(QAbstractSocket::SocketError /*socketError*/);
     void OnRemotePacketSend(Packet packet);
+    void OnRemotePacketHook(Packet* packet);
 
     //proxy
     void OnProxyConnection();
@@ -69,9 +81,12 @@ private slots:
     void ClearTable();
 
     //packets
-    void PacketZoom(QTreeWidgetItem* item);
+    void ShowPacketZoom(QTreeWidgetItem* item);
     void ActionOpen();
     void ActionSave();
+
+    //spooofing
+    void ShowSpoofingPacket();
 
 private:
     Ui::MainWindow *ui;
@@ -83,11 +98,23 @@ private:
 
     MwTablePackets m_tableItemPackets;
 
+    QList<QTreeWidgetItem*> m_spoofEntry;
+    MwSpoofPacket m_spoofPackets;
+
     //===============================
     //setting from file =============
     QHostAddress m_authServer;
     qint16 m_authPort;
-    QString m_scriptDir; //script directory for the packetEditor
+    QString m_scriptDir; //script directory
+    QString m_spoofingDir; //spoofing directory
+    //===============================
+
+    //===============================
+    //spoofing function =============
+    bool isSpoofingPacket(PacketEditor* packetEditor);
+    bool spoofingPacket(Packet* packet, PacketEditor *packetEditor);
+    void loadSpoofingPacket(); //load spoofing packet script
+    QString getSpoofingKey(ushort opcocde, PacketEditor::PacketType); //return the map key
     //===============================
 
     void InitSettings();
