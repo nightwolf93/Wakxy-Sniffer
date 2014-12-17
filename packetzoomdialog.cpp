@@ -35,7 +35,6 @@ void PacketZoomDialog::OnReloadScript()
     UpdateUI();
 }
 
-
 void PacketZoomDialog::UpdateUI()
 {
     ui->lineEditeSize->setText(QString::number(m_packetEditor->getSize()));

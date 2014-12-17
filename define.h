@@ -56,5 +56,6 @@
 #define TXT_LOG_LOCAL_PACKET_SPOOFING "L'opcode %1 à été modifié avant d'étre envoyé au serveur"
 
 #define TXT_LOG_FILE_LOAD "Fichier chargé"
+#define TXT_LOG_SPOOFING_LOADED "Le spoofing de l'opcode %1 est chargé"
 
 #endif // DEFINE_H

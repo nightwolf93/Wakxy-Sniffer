@@ -24,11 +24,10 @@ struct SpoofPacket
     ushort opcode;
     int type;
     QByteArray raw;
-    QTreeWidgetItem* treeItem;
 };
 
 typedef QMap<QTreeWidgetItem*, PacketEditor*> MwTablePackets;
-typedef QMap<QString, SpoofPacket> MwSpoofPacket;
+typedef QMap<QTreeWidgetItem*, SpoofPacket> MwSpoofPacket;
 
 class MainWindow : public QMainWindow
 {
@@ -85,9 +84,6 @@ private slots:
     void ActionOpen();
     void ActionSave();
 
-    //spooofing
-    void ShowSpoofingPacket();
-
 private:
     Ui::MainWindow *ui;
 
@@ -111,10 +107,8 @@ private:
 
     //===============================
     //spoofing function =============
-    bool isSpoofingPacket(PacketEditor* packetEditor);
     bool spoofingPacket(Packet* packet, PacketEditor *packetEditor);
     void loadSpoofingPacket(); //load spoofing packet script
-    QString getSpoofingKey(ushort opcocde, PacketEditor::PacketType); //return the map key
     //===============================
 
     void InitSettings();

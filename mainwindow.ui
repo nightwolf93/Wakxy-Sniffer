@@ -29,8 +29,8 @@
    <widget class="QPushButton" name="pushButtonProxy">
     <property name="geometry">
      <rect>
-      <x>810</x>
-      <y>530</y>
+      <x>710</x>
+      <y>520</y>
       <width>121</width>
       <height>31</height>
      </rect>
@@ -42,8 +42,8 @@
    <widget class="QPushButton" name="pushButtonCapture">
     <property name="geometry">
      <rect>
-      <x>950</x>
-      <y>530</y>
+      <x>840</x>
+      <y>520</y>
       <width>121</width>
       <height>31</height>
      </rect>
@@ -52,28 +52,12 @@
      <string>Démarrer la capture</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButtonSpoofingPacket">
-    <property name="enabled">
-     <bool>true</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>530</y>
-      <width>161</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Voir les packets spoofé</string>
-    </property>
-   </widget>
    <widget class="QTextBrowser" name="textBrowserLog">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>430</x>
       <y>310</y>
-      <width>1061</width>
+      <width>631</width>
       <height>201</height>
      </rect>
     </property>
@@ -92,9 +76,9 @@ p, li { white-space: pre-wrap; }
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>40</y>
-      <width>1061</width>
-      <height>231</height>
+      <y>30</y>
+      <width>1051</width>
+      <height>241</height>
      </rect>
     </property>
     <column>
@@ -131,11 +115,18 @@ p, li { white-space: pre-wrap; }
    <widget class="QLabel" name="labelServer">
     <property name="geometry">
      <rect>
-      <x>810</x>
-      <y>280</y>
+      <x>10</x>
+      <y>10</y>
       <width>261</width>
-      <height>20</height>
+      <height>16</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>7</pointsize>
+      <weight>50</weight>
+      <bold>false</bold>
+     </font>
     </property>
     <property name="layoutDirection">
      <enum>Qt::LeftToRight</enum>
@@ -143,15 +134,12 @@ p, li { white-space: pre-wrap; }
     <property name="text">
      <string>#########</string>
     </property>
-    <property name="alignment">
-     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-    </property>
    </widget>
    <widget class="QPushButton" name="pushButtonReloadConf">
     <property name="geometry">
      <rect>
-      <x>180</x>
-      <y>530</y>
+      <x>10</x>
+      <y>520</y>
       <width>201</width>
       <height>31</height>
      </rect>
@@ -163,10 +151,10 @@ p, li { white-space: pre-wrap; }
    <widget class="QPushButton" name="pushButtonClearLog">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>280</y>
-      <width>81</width>
-      <height>23</height>
+      <x>970</x>
+      <y>520</y>
+      <width>91</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">
@@ -176,14 +164,62 @@ p, li { white-space: pre-wrap; }
    <widget class="QPushButton" name="pushButtonClearTable">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>91</width>
-      <height>23</height>
+      <x>960</x>
+      <y>280</y>
+      <width>101</width>
+      <height>21</height>
      </rect>
     </property>
     <property name="text">
      <string>Vider le tableau</string>
+    </property>
+   </widget>
+   <widget class="QTreeWidget" name="treeWidgetPacketSpoofing">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>310</y>
+      <width>411</width>
+      <height>201</height>
+     </rect>
+    </property>
+    <column>
+     <property name="text">
+      <string>Type</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Opcode</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Activé</string>
+     </property>
+    </column>
+   </widget>
+   <widget class="QLabel" name="labelSpoofing">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>290</y>
+      <width>411</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>7</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="layoutDirection">
+     <enum>Qt::RightToLeft</enum>
+    </property>
+    <property name="text">
+     <string>Packets spoofing</string>
     </property>
    </widget>
   </widget>

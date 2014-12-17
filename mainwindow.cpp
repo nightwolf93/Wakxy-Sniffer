@@ -5,7 +5,6 @@
 #include "packeteditor.h"
 #include "utils.h"
 #include "packetzoomdialog.h"
-#include "packetspoofingdialog.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -61,7 +60,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pushButtonProxy, SIGNAL(clicked()), this, SLOT(UpdateProxyState()));
     connect(ui->pushButtonCapture, SIGNAL(clicked()), this, SLOT(UpdateCaptureState()));
     connect(ui->pushButtonReloadConf, SIGNAL(clicked()), this, SLOT(ReloadConf()));
-    connect(ui->pushButtonSpoofingPacket, SIGNAL(clicked()), this, SLOT(ShowSpoofingPacket()));
 
     connect(ui->pushButtonClearLog, SIGNAL(clicked()), this, SLOT(ClearLog()));
     connect(ui->pushButtonClearTable, SIGNAL(clicked()), this, SLOT(ClearTable()));
@@ -106,12 +104,6 @@ void MainWindow::ShowPacketZoom(QTreeWidgetItem *item)
         PacketZoomDialog* dialog = new PacketZoomDialog(itr.value(), this);
         dialog->show();
     }
-}
-
-void MainWindow::ShowSpoofingPacket()
-{
-    PacketSpoofingDialog* dialog = new PacketSpoofingDialog(this);
-    dialog->show();
 }
 
 void MainWindow::ActionOpen()
@@ -241,34 +233,20 @@ void MainWindow::ReloadConf()
 //METHODS ===========================
 //===================================
 
-QString MainWindow::getSpoofingKey(ushort opcode, PacketEditor::PacketType type)
-{
-    QString key = "";
-
-    (type == PacketEditor::PACKET_CLIENT) ? key += "CMSG" : key += "SMSG";
-    key += QString::number(opcode);
-
-    return key;
-}
-
-bool MainWindow::isSpoofingPacket(PacketEditor *packetEditor)
-{
-    QString key = getSpoofingKey(packetEditor->getOpcode(), packetEditor->getPacketType());
-    return (m_spoofPackets.find(key) != m_spoofPackets.end());
-}
-
 bool MainWindow::spoofingPacket(Packet *packet, PacketEditor *packetEditor)
 {
-   QString key = getSpoofingKey(packetEditor->getOpcode(), packetEditor->getPacketType());
-
-    MwSpoofPacket::iterator itr = m_spoofPackets.find(key);
-    if(itr != m_spoofPackets.end())
+    for(MwSpoofPacket::iterator itr = m_spoofPackets.begin(); itr != m_spoofPackets.end(); ++itr)
     {
-        packet->raw = itr.value().raw;
-        return true;
+        if(itr->type == packetEditor->getPacketType()
+                && itr->opcode == packetEditor->getOpcode()
+                && itr->enabled == true)
+        {
+            packet->raw = itr.value().raw;
+            return true;
+        }
     }
-    else
-        return false;
+
+    return false;
 }
 
 void MainWindow::loadSpoofingPacket()
@@ -306,29 +284,26 @@ void MainWindow::loadSpoofingPacket()
 
            //======================
            //create the struct ====
+           QTreeWidgetItem* item = new QTreeWidgetItem();
            SpoofPacket spoofPacket;
            spoofPacket.enabled = false;
            spoofPacket.type = type;
            spoofPacket.opcode = opcode;
            spoofPacket.raw = Utils::FromHexString(hexString);
-           spoofPacket.treeItem = new QTreeWidgetItem();
            //=======================
 
            //=======================
            //create tree item ======
-           if (spoofPacket.type == PacketEditor::PACKET_SERVER)
-               spoofPacket.treeItem->setText(0, TXT_UI_TABLE_PACKET_SERVER);
-           else
-               spoofPacket.treeItem->setText(0, TXT_UI_TABLE_PACKET_CLIENT);
+           (spoofPacket.type == PacketEditor::PACKET_SERVER) ? item->setText(0, TXT_UI_TABLE_PACKET_SERVER) : item->setText(0, TXT_UI_TABLE_PACKET_CLIENT);
 
-           spoofPacket.treeItem->setText(1, QString::number(opcode));  //opcode
-           spoofPacket.treeItem->setData(2, Qt::CheckStateRole, spoofPacket.enabled); //enable
+           item->setText(1, QString::number(opcode));  //opcode
+           item->setData(2, Qt::CheckStateRole, spoofPacket.enabled); //enable
            //=======================
 
-           QString key = getSpoofingKey(opcode, (PacketEditor::PacketType)type);
-           m_spoofPackets.insert(key, spoofPacket);
+           m_spoofPackets.insert(item, spoofPacket);
+           ui->treeWidgetPacketSpoofing->addTopLevelItem(item);
 
-           m_log->Add(Log::INFO, QString("L'opcode %1 est usurpé").arg(QString::number(opcode)));
+           m_log->Add(Log::INFO, QString(TXT_LOG_SPOOFING_LOADED).arg(QString::number(opcode)));
            loadFile.close();
         }
     }
