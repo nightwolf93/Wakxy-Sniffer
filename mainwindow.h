@@ -8,6 +8,7 @@
 #include <QTreeWidget>
 #include <QWidgetItem>
 #include <QFileDialog>
+#include <QStringList>
 
 #include "sniffer.h" //sniffer helper
 #include "log.h" //log helper
@@ -88,11 +89,13 @@ private slots:
 
     //packets
     void ShowPacketZoom(QTreeWidgetItem* item);
-    void ActionOpen();
-    void ActionSave();
+    void CaptureOpen();
+    void CaptureSave();
 
     //spoofing
     void TableSpoofingColumnChanged(QTreeWidgetItem* item, int column);
+    void CreateSpoofing();
+    void ReloadSpoofing();
 
 private:
     Ui::MainWindow *ui;
@@ -115,8 +118,9 @@ private:
 
     //===============================
     //spoofing function =============
-    bool spoofingPacket(Packet* packet, PacketEditor *packetEditor);
-    void loadSpoofingPacket(); //load spoofing packet script
+    bool SpoofingPacket(Packet* packet, PacketEditor *packetEditor);
+    void LoadSpoofingPacket(); //load spoofing packet script
+    void CreateSpoofingFile(); //create a spoofing file of selected packet
     //===============================
 
     void InitSettings();

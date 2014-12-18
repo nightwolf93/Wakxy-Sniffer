@@ -21,6 +21,8 @@
 #define TXT_UI_BUTTON_STOP_CAPTURE "Arrêter la capture"
 
 #define TXT_UI_ACTION_FILETYPE "Wakxy JSON file (*.wxy)"
+#define TXT_UI_ACTION_FILETYPE_2 "JSON file (*.json)"
+
 #define TXT_UI_ACTION_SAVE_AS "Sauvegarder ..."
 #define TXT_UI_ACTION_OPEN "Ouvrir ..."
 

@@ -31,8 +31,8 @@ MainWindow::MainWindow(QWidget *parent) :
     //==============
 
     //==============
-    //hook
-    loadSpoofingPacket();
+    //spoofing
+    LoadSpoofingPacket();
     //=============
 
     //==============
@@ -65,10 +65,12 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pushButtonClearTable, SIGNAL(clicked()), this, SLOT(ClearTable()));
 
     connect(ui->treeWidgetPacket, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowPacketZoom(QTreeWidgetItem*)));
-    connect(ui->actionOuvrir, SIGNAL(triggered()), this, SLOT(ActionOpen()));
-    connect(ui->actionSauvegarder, SIGNAL(triggered()), this, SLOT(ActionSave()));
+    connect(ui->actionOuvrir, SIGNAL(triggered()), this, SLOT(CaptureOpen()));
+    connect(ui->actionSauvegarder, SIGNAL(triggered()), this, SLOT(CaptureSave()));
 
     connect(ui->treeWidgetPacketSpoofing, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(TableSpoofingColumnChanged(QTreeWidgetItem*,int)));
+    connect(ui->pushButtonCreateSpoofing, SIGNAL(clicked()), this, SLOT(CreateSpoofing()));
+    connect(ui->pushButtonReloadSpoofing, SIGNAL(clicked()), this, SLOT(ReloadSpoofing()));
     //==============
 }
 
@@ -108,14 +110,76 @@ void MainWindow::ShowPacketZoom(QTreeWidgetItem *item)
     }
 }
 
-void MainWindow::ActionOpen()
+void MainWindow::CaptureOpen()
 {
     LoadCapture();
 }
 
-void MainWindow::ActionSave()
+void MainWindow::CaptureSave()
 {
     SaveCapture();
+}
+
+void MainWindow::ReloadSpoofing()
+{
+    LoadSpoofingPacket();
+}
+
+void MainWindow::CreateSpoofing()
+{
+    if(ui->treeWidgetPacket->selectedItems().count() == 0)
+        return;
+
+    QList<QTreeWidgetItem*> list = ui->treeWidgetPacket->selectedItems();
+    for(QList<QTreeWidgetItem*>::iterator itr = list.begin(); itr != list.end(); ++itr)
+    {
+        MwTablePackets::iterator item = m_tableItemPackets.find(*itr);
+        if(item != m_tableItemPackets.end())
+        {
+            PacketEditor* packetEditor = item.value();
+
+            QString defaultFileName = "packets_"+PacketEditor::getPacketTypeString(packetEditor->getPacketType());
+            defaultFileName += "_"+QString::number(packetEditor->getOpcode())+".json";
+
+            QString filename = QFileDialog::getSaveFileName(this, TXT_UI_ACTION_SAVE_AS, m_spoofingDir+"/"+defaultFileName, TXT_UI_ACTION_FILETYPE_2);
+
+            //file is null
+            if(filename.isNull())
+                continue;
+
+            QFile saveFile(filename); //create file
+            if (!saveFile.open(QIODevice::WriteOnly)) //try open it in readOnly
+            {
+                qWarning(TXT_UI_ACTION_SAVE_WARNING_WRITE_FAIL);
+                continue;
+            }
+
+            //=====================================
+            //create a json object of packets
+            QJsonObject obj;
+
+            obj["type"] = (int)packetEditor->getPacketType();
+            obj["opcode"] = (int)packetEditor->getOpcode();
+
+            QString hexString = Utils::ToHexString(packetEditor->getPacket());
+            QJsonArray bytesArrayJson;
+
+            QStringList list = hexString.split(" ");
+            foreach(QString str, list)
+                bytesArrayJson.append(str);
+
+            obj["raw"] = bytesArrayJson;
+
+            //====================================
+
+            //save the file
+            QJsonDocument doc(obj);
+            saveFile.write(doc.toJson());
+            saveFile.close();
+        }
+    }
+
+    LoadSpoofingPacket();
 }
 
 void MainWindow::TableSpoofingColumnChanged(QTreeWidgetItem *item, int column)
@@ -168,6 +232,10 @@ void MainWindow::OnLocalPacketSend(Packet packet)
 
 void MainWindow::OnLocalPacketHook(Packet *packet)
 {
+    PacketEditor* packetEditor = new PacketEditor(packet->raw, PacketEditor::PACKET_CLIENT, m_scriptDir);
+
+    if(SpoofingPacket(packet, packetEditor))
+        m_log->Add(Log::LOGLEVEL_INFO, QString(TXT_LOG_REMOTE_PACKET_SPOOFING).arg(packetEditor->getOpcode()));
 }
 
 //================
@@ -204,7 +272,7 @@ void MainWindow::OnRemotePacketHook(Packet *packet)
 {
     PacketEditor* packetEditor = new PacketEditor(packet->raw, PacketEditor::PACKET_SERVER, m_scriptDir);
 
-    if(spoofingPacket(packet, packetEditor))
+    if(SpoofingPacket(packet, packetEditor))
         m_log->Add(Log::LOGLEVEL_INFO, QString(TXT_LOG_REMOTE_PACKET_SPOOFING).arg(packetEditor->getOpcode()));
 }
 
@@ -253,7 +321,7 @@ void MainWindow::ReloadConf()
 //METHODS ===========================
 //===================================
 
-bool MainWindow::spoofingPacket(Packet *packet, PacketEditor *packetEditor)
+bool MainWindow::SpoofingPacket(Packet *packet, PacketEditor *packetEditor)
 {
     for(MwSpoofPacket::iterator itr = m_spoofPackets.begin(); itr != m_spoofPackets.end(); ++itr)
     {
@@ -269,11 +337,16 @@ bool MainWindow::spoofingPacket(Packet *packet, PacketEditor *packetEditor)
     return false;
 }
 
-void MainWindow::loadSpoofingPacket()
+void MainWindow::LoadSpoofingPacket()
 {
+    //Clear table
+    ui->treeWidgetPacketSpoofing->clear();
+    m_spoofPackets.clear();
+
     QDir().mkdir(m_spoofingDir); //check if folder exist, else create it
     QDir dir(m_spoofingDir);
     QDirIterator it(dir);
+
 
     while(it.hasNext())
     {
@@ -436,7 +509,6 @@ void MainWindow::LoadCapture()
 
 void MainWindow::SaveCapture()
 {
-
     QDateTime datetime = QDateTime::currentDateTime(); //current date time
     QString defaultFileName = "packets_"+datetime.toString("yyyyMMddhhmmss")+".wxy"; //default file name
 
