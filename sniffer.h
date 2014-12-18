@@ -21,7 +21,6 @@ struct Packet
 //list of packet
 typedef QList<Packet> Packets;
 
-
 //sniffer class
 //help to make a sniffer
 //packet sniffing can be getted by getPackets()
@@ -48,7 +47,7 @@ private:
     qint16 m_localPktSize;
 
     Packets m_packets;
-    QHostAddress m_adresse;
+    QHostAddress m_adress;
     qint16 m_port;
 
     SnifferState m_proxyState;
@@ -98,17 +97,26 @@ public:
 
     void QueuePacket(Packet packet, bool isLocalPacket);
 
+    //===========
+    //getter ====
+
     Packets getPackets() { return m_packets; }
     QTcpServer* getProxy() { return m_proxy; }
+    QHostAddress getAddress() { return m_adress; }
+    qint16 getPort() { return m_port; }
 
     QTcpSocket* getRemoteSocket() { return m_remoteSocket; }
     QTcpSocket* getLocalSocket() { return m_localSocket; }
 
     SnifferState getProxyState() { return m_proxyState; }
     SnifferState getCaptureState() { return m_captureState; }
-    void setCaptureState(SnifferState state);
 
     int getCountPackets() { return m_countPackets; }
+
+    //===========
+    //setter ====
+    void setCaptureState(SnifferState state);
+
 
 private:
     void resetCountPackets() { m_countPackets = 0; }

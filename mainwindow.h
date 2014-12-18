@@ -27,8 +27,15 @@ struct SpoofPacket
     QByteArray raw;
 };
 
+struct SnifferParams
+{
+    QHostAddress adress;
+    qint16 port;
+};
+
 typedef QMap<QTreeWidgetItem*, PacketEditor*> MwTablePackets;
 typedef QMap<QTreeWidgetItem*, SpoofPacket> MwSpoofPacket;
+typedef QMap<QTreeWidgetItem*, Sniffer*> MwTableSniffer;
 
 class MainWindow : public QMainWindow
 {
@@ -52,6 +59,14 @@ public:
         SPOOFINGTABLE_TYPE,
         SPOOFINGTABLE_OPCODE,
         SPOOFINGTABLE_ENABLED,
+    };
+
+    enum SnifferTableColumns
+    {
+        SNIFFERTABLE_ADRESS,
+        SNIFFERTABLE_PORT,
+        SNIFFERTABLE_STATUT,
+        SNIFFERTABLE_CAPTURE,
     };
 
 public:
@@ -99,39 +114,40 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-
-    QSettings *m_settings; //settings
-    Sniffer* m_sniffer; //sniffer
-    int m_sniffer_packet_count;
     Log* m_log; //log
+    MwTablePackets m_packets;
 
-    MwTablePackets m_tableItemPackets;
+    //=====================
+    //sniffer =============
+    QList<SnifferParams> m_snifferParamsList;
+    MwTableSniffer m_snifferList;
+    int m_packetCount;
+
+    void CreateSniffer(SnifferParams params);
+    void setProxyState(MwTableSniffer::iterator itr, Sniffer::SnifferState state);
+    void setCaptureState(MwTableSniffer::iterator itr, Sniffer::SnifferState state);
+
+    void SaveCapture();
+    void LoadCapture();
+
+    //===============================
+    //spoofing  =====================
     MwSpoofPacket m_spoofPackets;
 
-    //===============================
-    //setting from file =============
-    QHostAddress m_authServer;
-    qint16 m_authPort;
-    QString m_scriptDir; //script directory
-    QString m_spoofingDir; //spoofing directory
-    //===============================
-
-    //===============================
-    //spoofing function =============
     bool SpoofingPacket(Packet* packet, PacketEditor *packetEditor);
     void LoadSpoofingPacket(); //load spoofing packet script
     void CreateSpoofingFile(); //create a spoofing file of selected packet
+
     //===============================
+    //settings ======================
+    QSettings *m_settings; //settings
+
+    QString m_scriptDir; //script directory
+    QString m_spoofingDir; //spoofing directory
 
     void InitSettings();
     void ApplySettings();
     void AddPacketToTable(PacketEditor* packetEditor);
-
-    void setProxyState(Sniffer::SnifferState state);
-    void setCaptureState(Sniffer::SnifferState state);
-
-    void SaveCapture();
-    void LoadCapture();
 };
 
 #endif // MAINWINDOW_H

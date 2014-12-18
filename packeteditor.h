@@ -13,7 +13,6 @@
 #define PACKETEDITOR_PACKET_SERVER "SMSG"
 #define PACKETEDITOR_PACKET_CLIENT "CMSG"
 
-
 //packet type
 class PacketEditor : public QObject
 {
@@ -38,7 +37,6 @@ public:
     ushort getSize() { return m_size; }
     ushort getOpcode() { return m_opcode; }
     QString getScriptName() { return m_scriptFileName; }
-    //=====================
 
     //=====================
     //methods =============
@@ -108,7 +106,7 @@ private:
     void CheckScriptFile();
     void CompileScript();
     QTreeWidgetItem* AddToTree(QString key, QString value, QString parentKey = "");
-    //===================
+
 };
 
 #endif // PACKETEDITOR_H

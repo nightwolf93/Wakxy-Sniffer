@@ -12,7 +12,7 @@ Sniffer::Sniffer(QString adresse, qint16 port)
 
     m_countPackets = 0;
 
-    m_adresse = QHostAddress(adresse);
+    m_adress = QHostAddress(adresse);
     m_port = port;
 
     m_proxyState = Sniffer::STOP;
@@ -178,7 +178,7 @@ void Sniffer::OnProxyConnect()
    connect(m_localSocket, SIGNAL(disconnected()), this, SLOT(OnLocalDisconnect()));
    connect(m_localSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(OnLocalError(QAbstractSocket::SocketError)));
 
-   m_remoteSocket->connectToHost(m_adresse, m_port);
+   m_remoteSocket->connectToHost(m_adress, m_port);
    if(m_remoteSocket->waitForConnected(2000))
     ProxyConnect();
 }

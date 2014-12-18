@@ -26,32 +26,6 @@
    <string>Wakxy Sniffer</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QPushButton" name="pushButtonProxy">
-    <property name="geometry">
-     <rect>
-      <x>710</x>
-      <y>530</y>
-      <width>121</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Démarrer le proxy</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButtonCapture">
-    <property name="geometry">
-     <rect>
-      <x>840</x>
-      <y>530</y>
-      <width>121</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Démarrer la capture</string>
-    </property>
-   </widget>
    <widget class="QTextBrowser" name="textBrowserLog">
     <property name="geometry">
      <rect>
@@ -76,10 +50,13 @@ p, li { white-space: pre-wrap; }
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>30</y>
+      <y>10</y>
       <width>1051</width>
-      <height>241</height>
+      <height>251</height>
      </rect>
+    </property>
+    <property name="alternatingRowColors">
+     <bool>true</bool>
     </property>
     <column>
      <property name="text">
@@ -112,33 +89,10 @@ p, li { white-space: pre-wrap; }
      </property>
     </column>
    </widget>
-   <widget class="QLabel" name="labelServer">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>261</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>7</pointsize>
-      <weight>50</weight>
-      <bold>false</bold>
-     </font>
-    </property>
-    <property name="layoutDirection">
-     <enum>Qt::LeftToRight</enum>
-    </property>
-    <property name="text">
-     <string>#########</string>
-    </property>
-   </widget>
    <widget class="QPushButton" name="pushButtonReloadConf">
     <property name="geometry">
      <rect>
-      <x>500</x>
+      <x>760</x>
       <y>530</y>
       <width>201</width>
       <height>21</height>
@@ -174,79 +128,135 @@ p, li { white-space: pre-wrap; }
      <string>Vider le tableau</string>
     </property>
    </widget>
-   <widget class="QTreeWidget" name="treeWidgetPacketSpoofing">
+   <widget class="QTabWidget" name="tabWidgetTools">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>310</y>
+      <y>270</y>
       <width>411</width>
-      <height>211</height>
+      <height>291</height>
      </rect>
     </property>
-    <column>
-     <property name="text">
-      <string>Type</string>
-     </property>
-    </column>
-    <column>
-     <property name="text">
-      <string>Opcode</string>
-     </property>
-    </column>
-    <column>
-     <property name="text">
-      <string>Activé</string>
-     </property>
-    </column>
-   </widget>
-   <widget class="QLabel" name="labelSpoofing">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>290</y>
-      <width>411</width>
-      <height>20</height>
-     </rect>
+    <property name="currentIndex">
+     <number>0</number>
     </property>
-    <property name="font">
-     <font>
-      <pointsize>7</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="layoutDirection">
-     <enum>Qt::RightToLeft</enum>
-    </property>
-    <property name="text">
-     <string>Packets spoofing</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButtonCreateSpoofing">
-    <property name="geometry">
-     <rect>
-      <x>790</x>
-      <y>280</y>
-      <width>161</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Creer des fichiers de spoofing</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButtonReloadSpoofing">
-    <property name="geometry">
-     <rect>
-      <x>250</x>
-      <y>530</y>
-      <width>171</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Recharger les fichiers de spoofing</string>
-    </property>
+    <widget class="QWidget" name="tabSniffer">
+     <attribute name="title">
+      <string>Sniffer</string>
+     </attribute>
+     <widget class="QTreeWidget" name="treeWidgetSniffer">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>391</width>
+        <height>221</height>
+       </rect>
+      </property>
+      <column>
+       <property name="text">
+        <string>Adresse</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Port</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Statut</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Capture</string>
+       </property>
+      </column>
+     </widget>
+     <widget class="QPushButton" name="pushButtonProxy">
+      <property name="geometry">
+       <rect>
+        <x>140</x>
+        <y>240</y>
+        <width>121</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Changer statut proxy</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonCapture">
+      <property name="geometry">
+       <rect>
+        <x>270</x>
+        <y>240</y>
+        <width>121</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Changer statut capture</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tabSpoofing">
+     <attribute name="title">
+      <string>Spoofing</string>
+     </attribute>
+     <widget class="QTreeWidget" name="treeWidgetPacketSpoofing">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>391</width>
+        <height>221</height>
+       </rect>
+      </property>
+      <column>
+       <property name="text">
+        <string>Type</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Opcode</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Activé</string>
+       </property>
+      </column>
+     </widget>
+     <widget class="QPushButton" name="pushButtonCreateSpoofing">
+      <property name="geometry">
+       <rect>
+        <x>60</x>
+        <y>240</y>
+        <width>161</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Créer des fichiers de spoofing</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonReloadSpoofing">
+      <property name="geometry">
+       <rect>
+        <x>230</x>
+        <y>240</y>
+        <width>171</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Recharger les fichiers de spoofing</string>
+      </property>
+     </widget>
+    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">

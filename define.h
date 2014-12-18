@@ -14,11 +14,11 @@
 //define all usefull text for ui
 #define TXT_UI_LABEL_SERVER "Proxy pour l'adresse "
 
-#define TXT_UI_BUTTON_START_PROXY "Démarrer le proxy"
-#define TXT_UI_BUTTON_STOP_PROXY "Arrêter le proxy"
+#define TXT_UI_START_PROXY "Démarrer"
+#define TXT_UI_STOP_PROXY "Arrêter"
 
-#define TXT_UI_BUTTON_START_CAPTURE "Démarrer la capture"
-#define TXT_UI_BUTTON_STOP_CAPTURE "Arrêter la capture"
+#define TXT_UI_START_CAPTURE "Démarrer"
+#define TXT_UI_STOP_CAPTURE "Arrêter"
 
 #define TXT_UI_ACTION_FILETYPE "Wakxy JSON file (*.wxy)"
 #define TXT_UI_ACTION_FILETYPE_2 "JSON file (*.json)"
@@ -34,15 +34,16 @@
 #define TXT_UI_LABEL_FREE_BYTE "Byte non lus : "
 
 //define all usefull text for console
-#define TXT_LOG_DEFAULT "Bienvenue sur Wakxy Sniffer !"
-#define TXT_LOG_RELOAD_SETTINGS "Rechargement des fichiers de configuration ! Le proxy et la capture va être arrêté"
 
-#define TXT_LOG_PROXY_START "Proxy démarré"
-#define TXT_LOG_PROXY_STOP "Proxy arreté"
+#define TXT_LOG_DEFAULT "Bienvenue sur Wakxy Sniffer !"
+#define TXT_LOG_RELOAD_SETTINGS "Rechargement des fichiers de configuration ! Tout les sniffers vont être arrété"
+
+#define TXT_LOG_PROXY_START "Proxy[%1:%2] démarré"
+#define TXT_LOG_PROXY_STOP "Proxy[%1:%2] arreté"
 #define TXT_LOG_PROXY_CONNEXION "Connection au proxy"
 
-#define TXT_LOG_CAPTURE_START "Capture démarré"
-#define TXT_LOG_CAPTURE_STOP "Capture arreté"
+#define TXT_LOG_CAPTURE_START "Capture[%1:%2] démarré"
+#define TXT_LOG_CAPTURE_STOP "Capture[%1:%2] arreté"
 
 #define TXT_LOG_REMOTE_CONNECT "Serveur distant connecté"
 #define TXT_LOG_REMOTE_DISCONNECT "Serveur distant déconnecté"

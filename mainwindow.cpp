@@ -6,57 +6,34 @@
 #include "utils.h"
 #include "packetzoomdialog.h"
 
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    m_sniffer_packet_count = 0;
+    m_packetCount = 0;
 
     //===============
     //settings loader
     InitSettings();
     ApplySettings();
-    //===============
 
     //==============
     //log
     m_log = new Log(ui->textBrowserLog);
-    //==============
 
     //==============
     //sniffer
-    m_sniffer = new Sniffer(m_authServer.toString(), m_authPort);
-    setProxyState(Sniffer::STOP);
-    //==============
+    foreach(SnifferParams params, m_snifferParamsList)
+        CreateSniffer(params);
 
     //==============
     //spoofing
     LoadSpoofingPacket();
-    //=============
 
     //==============
-    //event signal
-
-    //proxy
-    connect(m_sniffer, SIGNAL(ProxyConnect()), this, SLOT(OnProxyConnection()));
-
-    //local
-    connect(m_sniffer, SIGNAL(LocalConnect()), this, SLOT(OnLocalConnect()));
-    connect(m_sniffer, SIGNAL(LocalDisconnect()), this, SLOT(OnLocalDisconnect()));
-    connect(m_sniffer, SIGNAL(LocalPacketRecv()), this, SLOT(OnLocalPacketRecv()));
-    connect(m_sniffer, SIGNAL(LocalError(QAbstractSocket::SocketError)), this, SLOT(OnLocalSocketError(QAbstractSocket::SocketError)));
-    connect(m_sniffer, SIGNAL(LocalPacketSend(Packet)), this, SLOT(OnLocalPacketSend(Packet)));
-    connect(m_sniffer, SIGNAL(LocalPacketHook(Packet*)), this, SLOT(OnLocalPacketHook(Packet*)));
-
-    //remote
-    connect(m_sniffer, SIGNAL(RemoteConnect()), this, SLOT(OnRemoteConnect()));
-    connect(m_sniffer, SIGNAL(RemoteDisconnect()), this, SLOT(OnRemoteDisconnect()));
-    connect(m_sniffer, SIGNAL(RemotePacketRecv()), this, SLOT(OnRemotePacketRecv()));
-    connect(m_sniffer, SIGNAL(RemoteError(QAbstractSocket::SocketError)), this, SLOT(OnRemoteSocketError(QAbstractSocket::SocketError)));
-    connect(m_sniffer, SIGNAL(RemotePacketSend(Packet)), this, SLOT(OnRemotePacketSend(Packet)));
-    connect(m_sniffer, SIGNAL(RemotePacketHook(Packet*)), this, SLOT(OnRemotePacketHook(Packet*)));
-
+    //ui event signal
     connect(ui->pushButtonProxy, SIGNAL(clicked()), this, SLOT(UpdateProxyState()));
     connect(ui->pushButtonCapture, SIGNAL(clicked()), this, SLOT(UpdateCaptureState()));
     connect(ui->pushButtonReloadConf, SIGNAL(clicked()), this, SLOT(ReloadConf()));
@@ -71,7 +48,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->treeWidgetPacketSpoofing, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(TableSpoofingColumnChanged(QTreeWidgetItem*,int)));
     connect(ui->pushButtonCreateSpoofing, SIGNAL(clicked()), this, SLOT(CreateSpoofing()));
     connect(ui->pushButtonReloadSpoofing, SIGNAL(clicked()), this, SLOT(ReloadSpoofing()));
-    //==============
 }
 
 //delete the ui
@@ -96,14 +72,14 @@ void MainWindow::ClearLog()
 void MainWindow::ClearTable()
 {
     ui->treeWidgetPacket->clear();
-    m_tableItemPackets.clear();
-    m_sniffer_packet_count = 0;
+    m_packets.clear();
+    m_packetCount = 0;
 }
 
 void MainWindow::ShowPacketZoom(QTreeWidgetItem *item)
 {
-    MwTablePackets::iterator itr = m_tableItemPackets.find(item);
-    if(itr != m_tableItemPackets.end())
+    MwTablePackets::iterator itr = m_packets.find(item);
+    if(itr != m_packets.end())
     {
         PacketZoomDialog* dialog = new PacketZoomDialog(itr.value(), this);
         dialog->show();
@@ -133,8 +109,8 @@ void MainWindow::CreateSpoofing()
     QList<QTreeWidgetItem*> list = ui->treeWidgetPacket->selectedItems();
     for(QList<QTreeWidgetItem*>::iterator itr = list.begin(); itr != list.end(); ++itr)
     {
-        MwTablePackets::iterator item = m_tableItemPackets.find(*itr);
-        if(item != m_tableItemPackets.end())
+        MwTablePackets::iterator item = m_packets.find(*itr);
+        if(item != m_packets.end())
         {
             PacketEditor* packetEditor = item.value();
 
@@ -219,7 +195,6 @@ void MainWindow::OnLocalPacketRecv()
 
 void MainWindow::OnLocalSocketError(QAbstractSocket::SocketError /*socketError*/)
 {
-    m_log->Add(Log::LOGLEVEL_NORMAL, m_sniffer->getLocalSocket()->errorString());
 }
 
 void MainWindow::OnLocalPacketSend(Packet packet)
@@ -257,7 +232,6 @@ void MainWindow::OnRemotePacketRecv()
 
 void MainWindow::OnRemoteSocketError(QAbstractSocket::SocketError /*socketError*/)
 {
-    m_log->Add(Log::LOGLEVEL_NORMAL, m_sniffer->getRemoteSocket()->errorString());
 }
 
 void MainWindow::OnRemotePacketSend(Packet packet)
@@ -286,19 +260,28 @@ void MainWindow::OnProxyConnection()
 
 void MainWindow::UpdateProxyState()
 {
-    setProxyState((m_sniffer->getProxyState() == Sniffer::START) ? Sniffer::STOP : Sniffer::START);
+    if(QTreeWidgetItem* item = ui->treeWidgetSniffer->currentItem())
+    {
+        MwTableSniffer::iterator itr = m_snifferList.find(item);
+        if(itr != m_snifferList.end())
+        {
+           Sniffer* sniffer = itr.value();
+           setProxyState(itr, (sniffer->getProxyState() == Sniffer::START) ? Sniffer::STOP : Sniffer::START);
+        }
+    }
 }
 
 void MainWindow::UpdateCaptureState()
 {
-   if(m_sniffer->getCaptureState() == Sniffer::STOP)
-   {
-        setCaptureState(Sniffer::START);
-   }
-   else
-   {
-       setCaptureState(Sniffer::STOP);
-   }
+    if(QTreeWidgetItem* item = ui->treeWidgetSniffer->currentItem())
+    {
+        MwTableSniffer::iterator itr = m_snifferList.find(item);
+        if(itr != m_snifferList.end())
+        {
+           Sniffer* sniffer = itr.value();
+           setCaptureState(itr, (sniffer->getCaptureState() == Sniffer::START) ? Sniffer::STOP : Sniffer::START);
+        }
+    }
 }
 
 //================
@@ -306,13 +289,14 @@ void MainWindow::UpdateCaptureState()
 
 void MainWindow::ReloadConf()
 {
+    for(MwTableSniffer::iterator itr = m_snifferList.begin(); itr != m_snifferList.end(); ++itr)
+    {
+        setProxyState(itr, Sniffer::STOP);
+    }
+
     InitSettings();
     ApplySettings();
-
     m_log->Add(Log::LOGLEVEL_NORMAL, TXT_LOG_RELOAD_SETTINGS);
-
-    setProxyState(Sniffer::STOP);
-    m_sniffer = new Sniffer(m_authServer.toString(), m_authPort);
 }
 
 //================
@@ -325,15 +309,12 @@ bool MainWindow::SpoofingPacket(Packet *packet, PacketEditor *packetEditor)
 {
     for(MwSpoofPacket::iterator itr = m_spoofPackets.begin(); itr != m_spoofPackets.end(); ++itr)
     {
-        if(itr->type == packetEditor->getPacketType()
-                && itr->opcode == packetEditor->getOpcode()
-                && itr->enabled == true)
+        if(itr->type == packetEditor->getPacketType() && itr->opcode == packetEditor->getOpcode() && itr->enabled == true)
         {
             packet->raw = itr.value().raw;
             return true;
         }
     }
-
     return false;
 }
 
@@ -346,7 +327,6 @@ void MainWindow::LoadSpoofingPacket()
     QDir().mkdir(m_spoofingDir); //check if folder exist, else create it
     QDir dir(m_spoofingDir);
     QDirIterator it(dir);
-
 
     while(it.hasNext())
     {
@@ -377,7 +357,7 @@ void MainWindow::LoadSpoofingPacket()
 
            //======================
            //create the struct ====
-           QTreeWidgetItem* item = new QTreeWidgetItem();
+           QTreeWidgetItem* item = new QTreeWidgetItem;
            SpoofPacket spoofPacket;
            spoofPacket.enabled = false;
            spoofPacket.type = type;
@@ -403,61 +383,116 @@ void MainWindow::LoadSpoofingPacket()
     }
 }
 
-void MainWindow::setProxyState(Sniffer::SnifferState state)
+void MainWindow::CreateSniffer(SnifferParams params)
 {
+    //=================
+    //Tree ============
+    QTreeWidgetItem* treeItem = new QTreeWidgetItem;
+
+    treeItem->setText(SNIFFERTABLE_ADRESS, params.adress.toString());
+    treeItem->setText(SNIFFERTABLE_PORT, QString::number(params.port));
+    treeItem->setText(SNIFFERTABLE_STATUT, TXT_UI_STOP_PROXY);
+    treeItem->setTextColor(SNIFFERTABLE_STATUT, QColor("red"));
+    treeItem->setText(SNIFFERTABLE_CAPTURE, TXT_UI_STOP_CAPTURE);
+    treeItem->setTextColor(SNIFFERTABLE_CAPTURE, QColor("red"));
+
+    ui->treeWidgetSniffer->addTopLevelItem(treeItem);
+    ui->treeWidgetSniffer->resizeColumnToContents(0);
+
+    //==================
+    //Sniffer ==========
+
+    Sniffer* sniffer = new Sniffer(params.adress.toString(), params.port);
+    //proxy
+    connect(sniffer, SIGNAL(ProxyConnect()), this, SLOT(OnProxyConnection()));
+
+    //local
+    connect(sniffer, SIGNAL(LocalConnect()), this, SLOT(OnLocalConnect()));
+    connect(sniffer, SIGNAL(LocalDisconnect()), this, SLOT(OnLocalDisconnect()));
+    connect(sniffer, SIGNAL(LocalPacketRecv()), this, SLOT(OnLocalPacketRecv()));
+    connect(sniffer, SIGNAL(LocalError(QAbstractSocket::SocketError)), this, SLOT(OnLocalSocketError(QAbstractSocket::SocketError)));
+    connect(sniffer, SIGNAL(LocalPacketSend(Packet)), this, SLOT(OnLocalPacketSend(Packet)));
+    connect(sniffer, SIGNAL(LocalPacketHook(Packet*)), this, SLOT(OnLocalPacketHook(Packet*)));
+
+    //remote
+    connect(sniffer, SIGNAL(RemoteConnect()), this, SLOT(OnRemoteConnect()));
+    connect(sniffer, SIGNAL(RemoteDisconnect()), this, SLOT(OnRemoteDisconnect()));
+    connect(sniffer, SIGNAL(RemotePacketRecv()), this, SLOT(OnRemotePacketRecv()));
+    connect(sniffer, SIGNAL(RemoteError(QAbstractSocket::SocketError)), this, SLOT(OnRemoteSocketError(QAbstractSocket::SocketError)));
+    connect(sniffer, SIGNAL(RemotePacketSend(Packet)), this, SLOT(OnRemotePacketSend(Packet)));
+    connect(sniffer, SIGNAL(RemotePacketHook(Packet*)), this, SLOT(OnRemotePacketHook(Packet*)));
+
+    m_snifferList.insert(treeItem, sniffer);
+}
+
+void MainWindow::setProxyState(MwTableSniffer::iterator itr, Sniffer::SnifferState state)
+{
+    Sniffer* sniffer = itr.value();
+    QTreeWidgetItem* treeItem = itr.key();
+
     //if sniffer is stopped we need to start them else start
     if (state == Sniffer::START)
     {
-        m_sniffer->Start();
+        sniffer->Start();
+        treeItem->setText(SNIFFERTABLE_STATUT, TXT_UI_START_PROXY);
+        treeItem->setTextColor(SNIFFERTABLE_STATUT, QColor("green"));
 
-        //==============
-        //update ui
-        ui->pushButtonProxy->setText(TXT_UI_BUTTON_STOP_PROXY);
-        ui->pushButtonCapture->setText(TXT_UI_BUTTON_START_CAPTURE);
-        ui->pushButtonCapture->setEnabled(true);
-        //==============
+        m_log->Add(Log::LOGLEVEL_INFO, QString(TXT_LOG_PROXY_START)
+                   .arg(sniffer->getAddress().toString(),
+                        QString::number(sniffer->getPort()))
+                        );
 
-        m_log->Add(Log::LOGLEVEL_INFO, TXT_LOG_PROXY_START);
-        setCaptureState(Sniffer::START);
+        setCaptureState(itr, Sniffer::START);
     }
     else
     {
-        m_sniffer->Stop();
+        sniffer->Stop();
+        treeItem->setText(SNIFFERTABLE_STATUT, TXT_UI_STOP_PROXY);
+        treeItem->setTextColor(SNIFFERTABLE_STATUT, QColor("red"));
+        m_log->Add(Log::LOGLEVEL_ERROR, QString(TXT_LOG_PROXY_STOP)
+                   .arg(sniffer->getAddress().toString(),
+                        QString::number(sniffer->getPort()))
+                        );
 
-        //=================
-        //update ui
-        ui->pushButtonProxy->setText(TXT_UI_BUTTON_START_PROXY);
-        ui->pushButtonCapture->setText(TXT_UI_BUTTON_START_CAPTURE);
-        ui->pushButtonCapture->setEnabled(false);
-        //=================
-
-        m_log->Add(Log::LOGLEVEL_ERROR, TXT_LOG_PROXY_STOP);
-        setCaptureState(Sniffer::STOP);
+        setCaptureState(itr, Sniffer::STOP);
     }
 }
 
-void MainWindow::setCaptureState(Sniffer::SnifferState state)
+void MainWindow::setCaptureState(MwTableSniffer::iterator itr, Sniffer::SnifferState state)
 {
+    Sniffer* sniffer = itr.value();
+    QTreeWidgetItem* treeItem = itr.key();
+
     if(state == Sniffer::START)
     {
-         ui->pushButtonCapture->setText(TXT_UI_BUTTON_STOP_CAPTURE);
-         m_sniffer->setCaptureState(Sniffer::START);
-         m_log->Add(Log::LOGLEVEL_INFO, TXT_LOG_CAPTURE_START);
+         sniffer->setCaptureState(Sniffer::START);
+         treeItem->setText(SNIFFERTABLE_CAPTURE, TXT_UI_START_CAPTURE);
+         treeItem->setTextColor(SNIFFERTABLE_CAPTURE, QColor("green"));
+
+         m_log->Add(Log::LOGLEVEL_INFO, QString(TXT_LOG_CAPTURE_START)
+                    .arg(sniffer->getAddress().toString(),
+                         QString::number(sniffer->getPort()))
+                         );
     }
     else
     {
-         ui->pushButtonCapture->setText(TXT_UI_BUTTON_START_CAPTURE);
-         m_sniffer->setCaptureState(Sniffer::STOP);
-         m_log->Add(Log::LOGLEVEL_ERROR, TXT_LOG_CAPTURE_STOP);
+         sniffer->setCaptureState(Sniffer::STOP);
+         treeItem->setText(SNIFFERTABLE_CAPTURE, TXT_UI_STOP_CAPTURE);
+         treeItem->setTextColor(SNIFFERTABLE_CAPTURE, QColor("red"));
+
+         m_log->Add(Log::LOGLEVEL_ERROR, QString(TXT_LOG_CAPTURE_STOP)
+                    .arg(sniffer->getAddress().toString(),
+                         QString::number(sniffer->getPort()))
+                         );
     }
 }
 
 void MainWindow::AddPacketToTable(PacketEditor *packetEditor)
 {
-    m_sniffer_packet_count++;
+    m_packetCount++;
     QTreeWidgetItem* item = new QTreeWidgetItem;
 
-    item->setText(MainWindow::PACKETTABLE_NUMBER, QString::number(m_sniffer_packet_count)); //count packet
+    item->setText(MainWindow::PACKETTABLE_NUMBER, QString::number(m_packetCount)); //count packet
 
     //packet type
     item->setText(MainWindow::PACKETTABLE_TYPE, PacketEditor::getPacketTypeString(packetEditor->getPacketType()));
@@ -469,7 +504,7 @@ void MainWindow::AddPacketToTable(PacketEditor *packetEditor)
 
     //add item
     ui->treeWidgetPacket->addTopLevelItem(item);
-    m_tableItemPackets.insert(item, packetEditor);
+    m_packets.insert(item, packetEditor);
 }
 
 void MainWindow::LoadCapture()
@@ -531,7 +566,7 @@ void MainWindow::SaveCapture()
     QJsonArray packetsArray;
 
     int level = -1;
-    for(MwTablePackets::iterator itr = m_tableItemPackets.begin(); itr != m_tableItemPackets.end(); ++itr)
+    for(MwTablePackets::iterator itr = m_packets.begin(); itr != m_packets.end(); ++itr)
     {
         QJsonObject packet;
 
@@ -570,19 +605,51 @@ void MainWindow::InitSettings()
 
 void MainWindow::ApplySettings()
 {
+    //===============
+    //clear
+    m_snifferParamsList.clear();
+    m_snifferList.clear();
+
+    //===============
     //load setting
-    m_authServer = QHostAddress(m_settings->value("auth/server", SETTINGS_DEFAULT_AUTH_SERVER).value<QString>());
-    m_authPort = m_settings->value("auth/port", SETTINGS_DEFAULT_AUTH_PORT).value<qint16>();
-    m_scriptDir = m_settings->value("packetEditor/scriptDir", SETTING_PACKETEDITOR_SCRIPT_FOLDER).value<QString>();
+    int size = m_settings->beginReadArray("sniffer");
+
+    if(size == 0)
+    {
+       SnifferParams params;
+       params.adress = QHostAddress(SETTINGS_DEFAULT_AUTH_SERVER);
+       params.port = SETTINGS_DEFAULT_AUTH_PORT;
+
+       m_snifferParamsList.append(params);
+    }
+
+    for(int i = 0; i < size; i++)
+    {
+        m_settings->setArrayIndex(i);
+
+        SnifferParams snifferParams;
+        snifferParams.adress = QHostAddress(m_settings->value("server", SETTINGS_DEFAULT_AUTH_SERVER).value<QString>());
+        snifferParams.port = m_settings->value("port", SETTINGS_DEFAULT_AUTH_PORT).value<qint16>();
+        m_snifferParamsList.append(snifferParams);
+    }
+    m_settings->endArray();
+
+    m_scriptDir = m_settings->value("packet/scriptDir", SETTING_PACKETEDITOR_SCRIPT_FOLDER).value<QString>();
     m_spoofingDir = m_settings->value("packet/spoofingDir", SETTING_SPOOFING_DEFAULT_FOLDER).value<QString>();
 
-    //save setting
-    m_settings->setValue("auth/server", m_authServer.toString());
-    m_settings->setValue("auth/port", m_authPort);
-    m_settings->setValue("packetEdtitor/scriptDir", m_scriptDir);
-    m_settings->setValue("packet/spoofingDir", m_spoofingDir);
+    //==================
+    //save setting =====
+    m_settings->beginWriteArray("sniffer");
+    for (int i = 0; i < m_snifferParamsList.size(); ++i)
+    {
+        m_settings->setArrayIndex(i);
+        m_settings->setValue("server", m_snifferParamsList.at(i).adress.toString());
+        m_settings->setValue("port",  m_snifferParamsList.at(i).port);
+    }
+    m_settings->endArray();
 
-    //ui update
-    ui->labelServer->setText(TXT_UI_LABEL_SERVER + m_authServer.toString() + ":" + QString::number(m_authPort));
+    m_settings->setValue("packet/scriptDir", m_scriptDir);
+    m_settings->setValue("packet/spoofingDir", m_spoofingDir);
+    //==================
 }
 
