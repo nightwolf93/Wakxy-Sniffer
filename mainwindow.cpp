@@ -55,7 +55,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_sniffer, SIGNAL(RemotePacketRecv()), this, SLOT(OnRemotePacketRecv()));
     connect(m_sniffer, SIGNAL(RemoteError(QAbstractSocket::SocketError)), this, SLOT(OnRemoteSocketError(QAbstractSocket::SocketError)));
     connect(m_sniffer, SIGNAL(RemotePacketSend(Packet)), this, SLOT(OnRemotePacketSend(Packet)));
-    connect(m_sniffer, SIGNAL(LocalPacketHook(Packet*)), this, SLOT(OnRemotePacketHook(Packet*)));
+    connect(m_sniffer, SIGNAL(RemotePacketHook(Packet*)), this, SLOT(OnRemotePacketHook(Packet*)));
 
     connect(ui->pushButtonProxy, SIGNAL(clicked()), this, SLOT(UpdateProxyState()));
     connect(ui->pushButtonCapture, SIGNAL(clicked()), this, SLOT(UpdateCaptureState()));
