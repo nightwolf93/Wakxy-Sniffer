@@ -20,9 +20,6 @@
 #define TXT_UI_BUTTON_START_CAPTURE "Démarrer la capture"
 #define TXT_UI_BUTTON_STOP_CAPTURE "Arrêter la capture"
 
-#define TXT_UI_TABLE_PACKET_SERVER "SMSG"
-#define TXT_UI_TABLE_PACKET_CLIENT "CMSG"
-
 #define TXT_UI_ACTION_FILETYPE "Wakxy JSON file (*.wxy)"
 #define TXT_UI_ACTION_SAVE_AS "Sauvegarder ..."
 #define TXT_UI_ACTION_OPEN "Ouvrir ..."
@@ -56,6 +53,8 @@
 #define TXT_LOG_LOCAL_PACKET_SPOOFING "L'opcode %1 à été modifié avant d'étre envoyé au serveur"
 
 #define TXT_LOG_FILE_LOAD "Fichier chargé"
-#define TXT_LOG_SPOOFING_LOADED "Le spoofing de l'opcode %1 est chargé"
+#define TXT_LOG_SPOOFING_LOADED "Le spoofing de l'opcode  %1 %2 est chargé"
+#define TXT_LOG_SPOOFING_ENABLE "Le spoofing de l'opcode %1 %2 est activé"
+#define TXT_LOG_SPOOFING_DISABLED "Le spoofing de l'opcode %1 %2 est désactivé"
 
 #endif // DEFINE_H

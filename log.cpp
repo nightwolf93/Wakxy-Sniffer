@@ -6,7 +6,7 @@ Log::Log(QTextBrowser* parent)
     m_parent = parent;
     m_parent->setReadOnly(true);
 
-    Add(NORMAL, TXT_LOG_DEFAULT);
+    Add(LOGLEVEL_NORMAL, TXT_LOG_DEFAULT);
 }
 
 void Log::Clear()
@@ -31,15 +31,15 @@ void Log::Add(LogLevel level, QString message)
     QString startHtml = "<font color=>";
     switch(level)
     {
-        case ERROR :
+        case LOGLEVEL_ERROR :
             startHtml = "<font color=\"Red\">";
             break;
 
-        case NORMAL :
+        case LOGLEVEL_NORMAL :
             startHtml = "<font color=\"Black\">";
             break;
 
-        case INFO :
+        case LOGLEVEL_INFO :
             startHtml = "<font color=\"Blue\">";
             break;
     }

@@ -230,6 +230,14 @@ void PacketEditor::ReadPacket()
     CompileScript(); // compile the script
 }
 
+QString PacketEditor::getPacketTypeString(PacketType type)
+{
+    if(type == PACKET_CLIENT)
+        return PACKETEDITOR_PACKET_CLIENT;
+    else
+        return PACKETEDITOR_PACKET_SERVER;
+}
+
 //====================
 //tree ===============
 

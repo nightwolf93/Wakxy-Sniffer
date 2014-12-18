@@ -38,12 +38,19 @@ public:
     //packet table enum
     enum PacketTableColumns
     {
-        NUMBER,
-        TYPE,
-        SIZE,
-        OPCODE,
-        ASCII,
-        HEX,
+        PACKETTABLE_NUMBER,
+        PACKETTABLE_TYPE,
+        PACKETTABLE_SIZE,
+        PACKETTABLE_OPCODE,
+        PACKETTABLE_ASCII,
+        PACKETTABLE_HEX,
+    };
+
+    enum SpoofingTableColumns
+    {
+        SPOOFINGTABLE_TYPE,
+        SPOOFINGTABLE_OPCODE,
+        SPOOFINGTABLE_ENABLED,
     };
 
 public:
@@ -84,6 +91,9 @@ private slots:
     void ActionOpen();
     void ActionSave();
 
+    //spoofing
+    void TableSpoofingColumnChanged(QTreeWidgetItem* item, int column);
+
 private:
     Ui::MainWindow *ui;
 
@@ -93,8 +103,6 @@ private:
     Log* m_log; //log
 
     MwTablePackets m_tableItemPackets;
-
-    QList<QTreeWidgetItem*> m_spoofEntry;
     MwSpoofPacket m_spoofPackets;
 
     //===============================

@@ -14,9 +14,9 @@ class Log : public QObject
 public:
     enum LogLevel
     {
-        NORMAL, //black
-        ERROR, //red
-        INFO, //blue
+        LOGLEVEL_NORMAL, //black
+        LOGLEVEL_ERROR, //red
+        LOGLEVEL_INFO, //blue
     };
 
 private:

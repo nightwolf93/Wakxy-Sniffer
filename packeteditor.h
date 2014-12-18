@@ -10,6 +10,9 @@
 #include "sniffer.h"
 
 #define PACKETEDITOR_UNK_KEY "unk"
+#define PACKETEDITOR_PACKET_SERVER "SMSG"
+#define PACKETEDITOR_PACKET_CLIENT "CMSG"
+
 
 //packet type
 class PacketEditor : public QObject
@@ -45,6 +48,7 @@ public:
     template<typename T> T Read(); //read function
     qint8 ReadInt8();
     quint8 ReadUInt8();
+    static QString getPacketTypeString(PacketType type);
     //=====================
 
 

@@ -67,6 +67,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->treeWidgetPacket, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowPacketZoom(QTreeWidgetItem*)));
     connect(ui->actionOuvrir, SIGNAL(triggered()), this, SLOT(ActionOpen()));
     connect(ui->actionSauvegarder, SIGNAL(triggered()), this, SLOT(ActionSave()));
+
+    connect(ui->treeWidgetPacketSpoofing, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(TableSpoofingColumnChanged(QTreeWidgetItem*,int)));
     //==============
 }
 
@@ -116,17 +118,35 @@ void MainWindow::ActionSave()
     SaveCapture();
 }
 
+void MainWindow::TableSpoofingColumnChanged(QTreeWidgetItem *item, int column)
+{
+    if(column == (int)MainWindow::SPOOFINGTABLE_ENABLED)
+    {
+        MwSpoofPacket::iterator itr = m_spoofPackets.find(item);
+        if( itr != m_spoofPackets.end())
+        {
+            itr.value().enabled = item->data(column, Qt::CheckStateRole).toBool();
+            QString typeStr = PacketEditor::getPacketTypeString((PacketEditor::PacketType)itr.value().type);
+
+            if(itr.value().enabled)
+                m_log->Add(Log::LOGLEVEL_INFO, QString(TXT_LOG_SPOOFING_ENABLE).arg(typeStr, QString::number(itr.value().opcode)));
+            else
+                m_log->Add(Log::LOGLEVEL_ERROR, QString(TXT_LOG_SPOOFING_DISABLED).arg(typeStr, QString::number(itr.value().opcode)));
+        }
+    }
+}
+
 //================
 //local ==========
 
 void MainWindow::OnLocalConnect()
 {
-    m_log->Add(Log::NORMAL, TXT_LOG_LOCAL_CONNECT);
+    m_log->Add(Log::LOGLEVEL_NORMAL, TXT_LOG_LOCAL_CONNECT);
 }
 
 void MainWindow::OnLocalDisconnect()
 {
-    m_log->Add(Log::ERROR, TXT_LOG_LOCAL_DISCONNECT);
+    m_log->Add(Log::LOGLEVEL_ERROR, TXT_LOG_LOCAL_DISCONNECT);
 }
 
 void MainWindow::OnLocalPacketRecv()
@@ -135,7 +155,7 @@ void MainWindow::OnLocalPacketRecv()
 
 void MainWindow::OnLocalSocketError(QAbstractSocket::SocketError /*socketError*/)
 {
-    m_log->Add(Log::NORMAL, m_sniffer->getLocalSocket()->errorString());
+    m_log->Add(Log::LOGLEVEL_NORMAL, m_sniffer->getLocalSocket()->errorString());
 }
 
 void MainWindow::OnLocalPacketSend(Packet packet)
@@ -143,7 +163,7 @@ void MainWindow::OnLocalPacketSend(Packet packet)
     PacketEditor* packetEditor = new PacketEditor(packet.raw, PacketEditor::PACKET_CLIENT, m_scriptDir);
     AddPacketToTable(packetEditor);
 
-    m_log->Add(Log::INFO, TXT_LOG_LOCAL_PACKET_SEND);
+    m_log->Add(Log::LOGLEVEL_INFO, TXT_LOG_LOCAL_PACKET_SEND);
 }
 
 void MainWindow::OnLocalPacketHook(Packet *packet)
@@ -155,12 +175,12 @@ void MainWindow::OnLocalPacketHook(Packet *packet)
 
 void MainWindow::OnRemoteConnect()
 {
-    m_log->Add(Log::NORMAL, TXT_LOG_REMOTE_CONNECT);
+    m_log->Add(Log::LOGLEVEL_NORMAL, TXT_LOG_REMOTE_CONNECT);
 }
 
 void MainWindow::OnRemoteDisconnect()
 {
-    m_log->Add(Log::ERROR, TXT_LOG_REMOTE_DISCONNECT);
+    m_log->Add(Log::LOGLEVEL_ERROR, TXT_LOG_REMOTE_DISCONNECT);
 }
 
 void MainWindow::OnRemotePacketRecv()
@@ -169,7 +189,7 @@ void MainWindow::OnRemotePacketRecv()
 
 void MainWindow::OnRemoteSocketError(QAbstractSocket::SocketError /*socketError*/)
 {
-    m_log->Add(Log::NORMAL, m_sniffer->getRemoteSocket()->errorString());
+    m_log->Add(Log::LOGLEVEL_NORMAL, m_sniffer->getRemoteSocket()->errorString());
 }
 
 void MainWindow::OnRemotePacketSend(Packet packet)
@@ -177,7 +197,7 @@ void MainWindow::OnRemotePacketSend(Packet packet)
      PacketEditor* packetEditor = new PacketEditor(packet.raw, PacketEditor::PACKET_SERVER, m_scriptDir);
      AddPacketToTable(packetEditor);
 
-     m_log->Add(Log::INFO, TXT_LOG_REMOTE_PACKET_SEND);
+     m_log->Add(Log::LOGLEVEL_INFO, TXT_LOG_REMOTE_PACKET_SEND);
 }
 
 void MainWindow::OnRemotePacketHook(Packet *packet)
@@ -185,7 +205,7 @@ void MainWindow::OnRemotePacketHook(Packet *packet)
     PacketEditor* packetEditor = new PacketEditor(packet->raw, PacketEditor::PACKET_SERVER, m_scriptDir);
 
     if(spoofingPacket(packet, packetEditor))
-        m_log->Add(Log::INFO, QString(TXT_LOG_REMOTE_PACKET_SPOOFING).arg(packetEditor->getOpcode()));
+        m_log->Add(Log::LOGLEVEL_INFO, QString(TXT_LOG_REMOTE_PACKET_SPOOFING).arg(packetEditor->getOpcode()));
 }
 
 //===================
@@ -193,7 +213,7 @@ void MainWindow::OnRemotePacketHook(Packet *packet)
 
 void MainWindow::OnProxyConnection()
 {
-    m_log->Add(Log::NORMAL, TXT_LOG_PROXY_CONNEXION);
+    m_log->Add(Log::LOGLEVEL_NORMAL, TXT_LOG_PROXY_CONNEXION);
 }
 
 void MainWindow::UpdateProxyState()
@@ -221,7 +241,7 @@ void MainWindow::ReloadConf()
     InitSettings();
     ApplySettings();
 
-    m_log->Add(Log::NORMAL, TXT_LOG_RELOAD_SETTINGS);
+    m_log->Add(Log::LOGLEVEL_NORMAL, TXT_LOG_RELOAD_SETTINGS);
 
     setProxyState(Sniffer::STOP);
     m_sniffer = new Sniffer(m_authServer.toString(), m_authPort);
@@ -292,18 +312,19 @@ void MainWindow::loadSpoofingPacket()
            spoofPacket.raw = Utils::FromHexString(hexString);
            //=======================
 
-           //=======================
-           //create tree item ======
-           (spoofPacket.type == PacketEditor::PACKET_SERVER) ? item->setText(0, TXT_UI_TABLE_PACKET_SERVER) : item->setText(0, TXT_UI_TABLE_PACKET_CLIENT);
+           QString strType = PacketEditor::getPacketTypeString((PacketEditor::PacketType)spoofPacket.type);
 
-           item->setText(1, QString::number(opcode));  //opcode
-           item->setData(2, Qt::CheckStateRole, spoofPacket.enabled); //enable
+           //=======================
+           //create tree item ====== 
+           item->setText((int)MainWindow::SPOOFINGTABLE_TYPE, strType);
+           item->setText((int)MainWindow::SPOOFINGTABLE_OPCODE, QString::number(opcode));  //opcode
+           item->setData((int)MainWindow::SPOOFINGTABLE_ENABLED, Qt::CheckStateRole, spoofPacket.enabled); //enable
            //=======================
 
            m_spoofPackets.insert(item, spoofPacket);
            ui->treeWidgetPacketSpoofing->addTopLevelItem(item);
 
-           m_log->Add(Log::INFO, QString(TXT_LOG_SPOOFING_LOADED).arg(QString::number(opcode)));
+           m_log->Add(Log::LOGLEVEL_INFO, QString(TXT_LOG_SPOOFING_LOADED).arg(strType, QString::number(opcode)));
            loadFile.close();
         }
     }
@@ -323,7 +344,7 @@ void MainWindow::setProxyState(Sniffer::SnifferState state)
         ui->pushButtonCapture->setEnabled(true);
         //==============
 
-        m_log->Add(Log::INFO, TXT_LOG_PROXY_START);
+        m_log->Add(Log::LOGLEVEL_INFO, TXT_LOG_PROXY_START);
         setCaptureState(Sniffer::START);
     }
     else
@@ -337,7 +358,7 @@ void MainWindow::setProxyState(Sniffer::SnifferState state)
         ui->pushButtonCapture->setEnabled(false);
         //=================
 
-        m_log->Add(Log::ERROR, TXT_LOG_PROXY_STOP);
+        m_log->Add(Log::LOGLEVEL_ERROR, TXT_LOG_PROXY_STOP);
         setCaptureState(Sniffer::STOP);
     }
 }
@@ -348,13 +369,13 @@ void MainWindow::setCaptureState(Sniffer::SnifferState state)
     {
          ui->pushButtonCapture->setText(TXT_UI_BUTTON_STOP_CAPTURE);
          m_sniffer->setCaptureState(Sniffer::START);
-         m_log->Add(Log::INFO, TXT_LOG_CAPTURE_START);
+         m_log->Add(Log::LOGLEVEL_INFO, TXT_LOG_CAPTURE_START);
     }
     else
     {
          ui->pushButtonCapture->setText(TXT_UI_BUTTON_START_CAPTURE);
          m_sniffer->setCaptureState(Sniffer::STOP);
-         m_log->Add(Log::ERROR, TXT_LOG_CAPTURE_STOP);
+         m_log->Add(Log::LOGLEVEL_ERROR, TXT_LOG_CAPTURE_STOP);
     }
 }
 
@@ -363,18 +384,15 @@ void MainWindow::AddPacketToTable(PacketEditor *packetEditor)
     m_sniffer_packet_count++;
     QTreeWidgetItem* item = new QTreeWidgetItem;
 
-    item->setText(MainWindow::NUMBER, QString::number(m_sniffer_packet_count)); //count packet
+    item->setText(MainWindow::PACKETTABLE_NUMBER, QString::number(m_sniffer_packet_count)); //count packet
 
     //packet type
-    if (packetEditor->getPacketType() == PacketEditor::PACKET_SERVER)
-        item->setText(MainWindow::TYPE, TXT_UI_TABLE_PACKET_SERVER);
-    else
-        item->setText(MainWindow::TYPE, TXT_UI_TABLE_PACKET_CLIENT);
+    item->setText(MainWindow::PACKETTABLE_TYPE, PacketEditor::getPacketTypeString(packetEditor->getPacketType()));
 
-    item->setText(MainWindow::SIZE, QString::number(packetEditor->getSize()));     //size
-    item->setText(MainWindow::OPCODE, QString::number(packetEditor->getOpcode()));  //opcode
-    item->setText(MainWindow::ASCII, Utils::ToASCII(packetEditor->getPacket()));   //ASCII
-    item->setText(MainWindow::HEX, Utils::ToHexString(packetEditor->getPacket())); //HEX
+    item->setText(MainWindow::PACKETTABLE_SIZE, QString::number(packetEditor->getSize()));     //size
+    item->setText(MainWindow::PACKETTABLE_OPCODE, QString::number(packetEditor->getOpcode()));  //opcode
+    item->setText(MainWindow::PACKETTABLE_ASCII, Utils::ToASCII(packetEditor->getPacket()));   //ASCII
+    item->setText(MainWindow::PACKETTABLE_HEX, Utils::ToHexString(packetEditor->getPacket())); //HEX
 
     //add item
     ui->treeWidgetPacket->addTopLevelItem(item);
@@ -413,7 +431,7 @@ void MainWindow::LoadCapture()
     }
 
     loadFile.close();
-    m_log->Add(Log::INFO, TXT_LOG_FILE_LOAD);
+    m_log->Add(Log::LOGLEVEL_INFO, TXT_LOG_FILE_LOAD);
 }
 
 void MainWindow::SaveCapture()
@@ -448,12 +466,12 @@ void MainWindow::SaveCapture()
         packet["byteArray"] = Utils::ToHexString(itr.value()->getPacket());
         packet["type"] = itr.value()->getPacketType();
 
-        if(itr.key()->text(MainWindow::NUMBER).toInt() < level)
+        if(itr.key()->text(MainWindow::PACKETTABLE_NUMBER).toInt() < level)
             packetsArray.push_front(packet);
         else
             packetsArray.push_back(packet);
 
-        level = itr.key()->text(MainWindow::NUMBER).toInt();
+        level = itr.key()->text(MainWindow::PACKETTABLE_NUMBER).toInt();
     }
 
     QJsonObject obj;

@@ -38,7 +38,7 @@ void PacketZoomDialog::OnReloadScript()
 void PacketZoomDialog::UpdateUI()
 {
     ui->lineEditeSize->setText(QString::number(m_packetEditor->getSize()));
-    ui->lineEditType->setText((m_packetEditor->getPacketType() == PacketEditor::PACKET_CLIENT ? TXT_UI_TABLE_PACKET_CLIENT : TXT_UI_TABLE_PACKET_SERVER));
+    ui->lineEditType->setText(PacketEditor::getPacketTypeString(m_packetEditor->getPacketType()));
     ui->lineEditOpcode->setText(QString::number(m_packetEditor->getOpcode()));
     ui->labelUsedScript->setText(TXT_UI_LABEL_SCRIPT + m_packetEditor->getScriptName());
     ui->labelNotReadByte->setText(TXT_UI_LABEL_FREE_BYTE + QString::number(m_packetEditor->getLength()));
