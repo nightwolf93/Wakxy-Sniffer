@@ -263,7 +263,7 @@ QTreeWidgetItem* PacketEditor::AddToTree(QString key, QString value, QString par
 
     //constructor
     if(rootItem)
-        item = new QTreeWidgetItem();
+        item = new QTreeWidgetItem;
     else
         item = new QTreeWidgetItem(itr.value());
 

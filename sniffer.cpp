@@ -2,7 +2,7 @@
 
 Sniffer::Sniffer(QString adresse, qint16 port)
 {
-    m_proxy = new QTcpServer();
+    m_proxy = new QTcpServer;
 
     m_remoteSocket = new QTcpSocket(this);
     m_remotePktSize = 0;
